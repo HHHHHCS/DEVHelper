@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/QML">
+        <file>../QML/main.qml</file>
+        <file>../QML/DeviceSelectInterface.qml</file>
+        <file>../QML/RCXHelperInterface.qml</file>
+        <file>../QML/UAVHelperInterface.qml</file>
+        <file>../QML/BAHelperInterface.qml</file>
+        <file>../QML/LoadingInterface.qml</file>
+        <file>../QML/InterfacesList.qml</file>
+    </qresource>
+    <qresource prefix="/Images">
+        <file>../Images/xunyi.png</file>
+    </qresource>
+</RCC>
