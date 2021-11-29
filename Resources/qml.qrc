@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/QML">
+    <qresource prefix="/">
         <file>../QML/main.qml</file>
         <file>../QML/DeviceSelectInterface.qml</file>
         <file>../QML/RCXHelperInterface.qml</file>
@@ -8,7 +8,7 @@
         <file>../QML/LoadingInterface.qml</file>
         <file>../QML/InterfacesList.qml</file>
     </qresource>
-    <qresource prefix="/Images">
+    <qresource prefix="/">
         <file>../Images/xunyi.png</file>
     </qresource>
 </RCC>

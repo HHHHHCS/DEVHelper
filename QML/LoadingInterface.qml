@@ -21,7 +21,7 @@ Window
     {
         id: loading_image
                 
-        source: "qrc:/Images/Images/xunyi.png"
+        source: "qrc:/Images/xunyi.png"
     }
     Text
     {
