@@ -4,7 +4,7 @@ import QtQuick.Controls 2.2
 
 Item
 {
-    id:root
+    id: device_select_interface
 
     width: parent.width; height: parent.height * 0.6
     anchors.top: parent.top

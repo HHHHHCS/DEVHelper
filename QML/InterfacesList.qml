@@ -5,7 +5,7 @@ import QtQuick.Controls 2.2
 
 ApplicationWindow
 {
-    id: root
+    id: interface_window
     visible: true
     width: 800; height: 600
     title: qsTr("DEVHelper")
