@@ -23,8 +23,6 @@ ApplicationWindow
     //     // sourceComponent: dev_select_interface        
     // }
 
-    // Component.onCompleted: page_loader.sourceComponent = dev_select_interface
-
     // 静态栈加载界面
     StackView
     {

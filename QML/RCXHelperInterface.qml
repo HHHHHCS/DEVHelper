@@ -10,43 +10,4 @@ Item
     visible: true
 
     width: parent.width; height: parent.height
-
-    MenuBar
-    {
-        Menu
-        {
-            title: qsTr("&File")
-            MenuItem
-            {
-                text: qsTr("&Open")
-            }
-            MenuItem
-            {
-                text: qsTr("&Save")
-            }
-            MenuItem
-            {
-                text: qsTr("Save &As...")
-            }
-            MenuSeparator { }
-            MenuItem
-            {
-                text: qsTr("&Quit")
-            }
-            // Action { text: qsTr("&Open") }
-            // Action { text: qsTr("&Save") }
-            // Action { text: qsTr("Save &As...") }
-            // MenuSeparator { }
-            // Action { text: qsTr("&Quit") }
-        }
-
-        Menu
-        {
-            title: qsTr("&Help")
-            MenuItem
-            {
-                text: qsTr("&About")
-            }
-        }
-    }
 }
