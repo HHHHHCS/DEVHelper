@@ -2,15 +2,15 @@ import QtQuick 2.3
 import QtQuick.Window 2.3
 import QtQuick.Controls 2.2
 
-// ApplicationWindow {
-Window 
+
+ApplicationWindow
 {
     id: root
     visible: true
     width: 800; height: 600
     title: qsTr("DEVHelper")
 
-    Component.onCompleted: root.show()
+    Component.onCompleted: show()
 
     // // 动态加载界面
     // Loader 

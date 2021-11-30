@@ -14,7 +14,7 @@ QtObject
         active: false
         onLoaded: 
         {
-            $loading_view.delay();
+            $loading_view.close()
         }
     }
 

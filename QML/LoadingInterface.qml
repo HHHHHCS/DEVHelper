@@ -23,6 +23,7 @@ Window
                 
         source: "qrc:/Images/xunyi.png"
     }
+
     Text
     {
         id: textCtrl
@@ -37,17 +38,4 @@ Window
             bottom: loading_image.bottom
         }
     }
-    Timer 
-    {
-        id: timer
-        interval: 1000; running: false; repeat: false
-        onTriggered: 
-        {
-            loading_view.visible = false;
-        }
-    }
-    function delay()
-    {
-        timer.start();
-    }    
 }

@@ -1,18 +1,17 @@
 import QtQuick 2.3
 import QtQuick.Window 2.2
-import QtQuick.Controls.Material 2.2
-import QtQuick.Controls 2.2
+import QtQuick.Controls 1.4
 
 
-ApplicationWindow
+Item
 {
     id:root
 
     visible: true
-    // width: parent.width; height: parent.height
-    anchors.fill: parent
 
-    menuBar: MenuBar
+    width: parent.width; height: parent.height
+
+    MenuBar
     {
         Menu
         {
@@ -41,10 +40,13 @@ ApplicationWindow
             // Action { text: qsTr("&Quit") }
         }
 
-        // Menu
-        // {
-        //     title: qsTr("&Help")
-        //     Action { text: qsTr("&About") }
-        // }
+        Menu
+        {
+            title: qsTr("&Help")
+            MenuItem
+            {
+                text: qsTr("&About")
+            }
+        }
     }
 }
