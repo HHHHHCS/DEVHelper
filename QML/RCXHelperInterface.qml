@@ -2,6 +2,7 @@ import QtQuick 2.9
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Controls 2.2
+import QtQuick.Layouts 1.2
 
 
 Item
@@ -38,7 +39,7 @@ Item
         }
     }
 
-    Row
+    RowLayout
     {
         id: interface_view
 
@@ -46,11 +47,15 @@ Item
 
         anchors.fill: parent
 
-        Column
+        spacing: 5
+
+        ColumnLayout
         {
             id: information_column
 
-            width: parent.width * 0.87; height: parent.height
+            width: parent.width * 0.87
+
+            spacing: 5
             
             Item
             {
@@ -69,116 +74,113 @@ Item
                     font.pixelSize: 15
                 }
 
-                Rectangle 
+                ScrollView
                 {
+                    id: software_info_scrollview
+
                     x: parent.x; y: software_info_label.y + software_info_label.height + 5
                     width: parent.width * 0.98; height: parent.height - (software_info_label.y + software_info_label.height) - 30
 
-                    border.color: "lightGray"
-                    border.width: 1
-
-                    ScrollView
+                    background: Rectangle
                     {
-                        id: software_info_scrollview
+                        border.color: "lightGray"
+                        border.width: 1
+                    }
 
-                        anchors.fill: parent
+                    clip: true
 
-                        clip: true
+                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                    ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
-                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+                    ListView
+                    {
+                        anchors.top: software_info_scrollview.top
+                        anchors.topMargin: 5
+                        anchors.left: software_info_scrollview.left
+                        anchors.leftMargin: 5
 
-                        ListView
+                        spacing: 5
+
+                        delegate: software_scroll_list_viem_component
+                        model: ListModel
                         {
-                            anchors.top: software_info_scrollview.top
-                            anchors.topMargin: 5
-                            anchors.left: software_info_scrollview.left
-                            anchors.leftMargin: 5
+                            ListElement { name: "固件版本：" }
+                            ListElement { name: "git 分支：" }
+                            ListElement { name: "git 标签：" }
+                        }
 
-                            spacing: 5
+                        Component
+                        {
+                            id: software_scroll_list_viem_component
 
-                            delegate: software_scroll_list_viem_component
-                            model: ListModel
+                            Row
                             {
-                                ListElement { name: "固件版本：" }
-                                ListElement { name: "git 分支：" }
-                                ListElement { name: "git 标签：" }
-                            }
-
-                            Component
-                            {
-                                id: software_scroll_list_viem_component
-
-                                Row
+                                Text
                                 {
-                                    spacing: 10
-                                    
-                                    Text
+                                    padding: 5
+
+                                    text: qsTr(name)
+                                    elide: Text.ElideLeft
+                                    font.pixelSize: 15
+                                }
+
+                                TextInput
+                                {
+                                    width: 200;
+
+                                    focus: true
+                                    autoScroll: false
+
+                                    font.pointSize: 10
+                                    // TODO(huangchsh): 设备连接后，获取设备信息，显示默认字符串
+
+                                    onTextEdited:
                                     {
-                                        padding: 5
-
-                                        text: qsTr(name)
-                                        elide: Text.ElideLeft
-                                        font.pixelSize: 15
-                                    }
-
-                                    TextInput
-                                    {
-                                        width: 100
-
-                                        focus: true
-                                        autoScroll: false
-
-                                        font.pointSize: 15
-
-                                        onTextEdited:
+                                        if(length > 0)
                                         {
-                                            if(length > 0)
-                                            {
-                                                save_button.enabled = true
-                                                cancel_button.enabled = true
-                                            }
-                                            else
-                                            {
-                                                save_button.enabled = false
-                                                cancel_button.enabled = false
-                                            }
+                                            save_button.enabled = true
+                                            cancel_button.enabled = true
+                                        }
+                                        else
+                                        {
+                                            save_button.enabled = false
+                                            cancel_button.enabled = false
                                         }
                                     }
+                                }
 
-                                    Button
+                                Button
+                                {
+                                    id: save_button
+
+                                    enabled: false
+
+                                    width: 50; height: 15
+
+                                    text: qsTr("✔")
+
+                                    onClicked:
                                     {
-                                        id: save_button
-
-                                        enabled: false
-
-                                        width: 50; height: 15
-
-                                        text: qsTr("✔")
-
-                                        onClicked:
-                                        {
-                                            // TODO(huangchsh): 触发保存事件
-                                        }
+                                        // TODO(huangchsh): 触发保存事件
                                     }
+                                }
 
-                                    Button
+                                Button
+                                {
+                                    id: cancel_button
+
+                                    enabled: false
+
+                                    anchors.right: software_scroll_list_viem_component.right
+                                    anchors.rightMargin: 10
+
+                                    width: 50; height: 15
+
+                                    text: qsTr("×")
+
+                                    onClicked:
                                     {
-                                        id: cancel_button
-
-                                        enabled: false
-
-                                        anchors.right: software_scroll_list_viem_component.right
-                                        anchors.rightMargin: 10
-
-                                        width: 50; height: 15
-
-                                        text: qsTr("×")
-
-                                        onClicked:
-                                        {
-                                            // TODO(huangchsh): 触发取消事件，将参数复原
-                                        }
+                                        // TODO(huangchsh): 触发取消事件，将参数复原
                                     }
                                 }
                             }
@@ -327,12 +329,9 @@ Item
             buttons: buttons_column.children
         }
 
-        Column
+        ColumnLayout
         {
             id: buttons_column
-
-            y: parent.y + 30
-            height: parent.height
 
             spacing: 5
 
