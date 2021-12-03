@@ -53,8 +53,6 @@ Item
         {
             id: information_column
 
-            width: parent.width * 0.87
-
             spacing: 5
             
             Item
@@ -62,7 +60,7 @@ Item
                 id: software_info_item
 
                 x: parent.width * 0.01; y: parent.height * 0.01
-                width: parent.width * 0.99; height: parent.height * 0.49
+                width: parent.width * 0.95; height: information_column.height * 0.5
 
                 Label
                 {
@@ -78,7 +76,9 @@ Item
                 {
                     id: software_info_scrollview
 
-                    x: parent.x; y: software_info_label.y + software_info_label.height + 5
+                    anchors.top: software_info_label.bottom
+                    anchors.topMargin: 5
+                    anchors.left: parent.left
                     width: parent.width * 0.98; height: parent.height - (software_info_label.y + software_info_label.height) - 30
 
                     background: Rectangle
@@ -113,8 +113,10 @@ Item
                         {
                             id: software_scroll_list_viem_component
 
-                            Row
+                            RowLayout
                             {
+                                spacing: 5
+
                                 Text
                                 {
                                     padding: 5
@@ -124,18 +126,36 @@ Item
                                     font.pixelSize: 15
                                 }
 
-                                TextInput
+                                TextField
                                 {
                                     width: 200;
 
+                                    clip: true
                                     focus: true
                                     autoScroll: false
+                                    hoverEnabled: true
+                                    selectByMouse: true
+                                    maximumLength: 25
+
+                                    placeholderTextColor: "Black"
+
+                                    background: Rectangle
+                                    {
+                                        id: view_component_text_field
+
+                                        implicitWidth: 200
+                                        implicitHeight: 15
+                                        color: "transparent"
+                                        border.color: "Black"
+                                    }
 
                                     font.pointSize: 10
                                     // TODO(huangchsh): 设备连接后，获取设备信息，显示默认字符串
 
                                     onTextEdited:
                                     {
+                                        // TODO(huangchsh): 增加文本修改判断
+
                                         if(length > 0)
                                         {
                                             save_button.enabled = true
@@ -155,7 +175,13 @@ Item
 
                                     enabled: false
 
-                                    width: 50; height: 15
+                                    background: Rectangle
+                                    {
+                                        implicitWidth: 50
+                                        implicitHeight: 15
+                                        color: "transparent"
+                                        border.color: "Black"
+                                    }
 
                                     text: qsTr("✔")
 
@@ -174,147 +200,19 @@ Item
                                     anchors.right: software_scroll_list_viem_component.right
                                     anchors.rightMargin: 10
 
-                                    width: 50; height: 15
+                                    background: Rectangle
+                                    {
+                                        implicitWidth: 50
+                                        implicitHeight: 15
+                                        color: "transparent"
+                                        border.color: "Black"
+                                    }
 
                                     text: qsTr("×")
 
                                     onClicked:
                                     {
                                         // TODO(huangchsh): 触发取消事件，将参数复原
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Item
-            {
-                id: hardware_info_item
-
-                x: parent.width * 0.01; y: parent.height - (software_info_item.y + software_info_item.height) + 5
-                width: parent.width * 0.99; height: parent.height * 0.49
-
-                Label
-                {
-                    id: hardware_info_label
-
-                    padding: 5
-
-                    text: qsTr("硬件信息")
-                    font.pixelSize: 15
-                }
-
-                Rectangle 
-                {
-                    x: parent.x; y: hardware_info_label.y + hardware_info_label.height + 5
-                    width: parent.width * 0.98; height: parent.height - (hardware_info_label.y + hardware_info_label.height) - 30
-                    color: "transparent"
-
-                    border.color: "lightGray"
-                    border.width: 1
-
-                    ScrollView
-                    {
-                        id: hardware_info_scrollview
-
-                        width: parent.width; height: parent.height
-
-                        clip: true
-
-                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
-
-                        ListView
-                        {
-                            anchors.top: hardware_info_scrollview.top
-                            anchors.topMargin: 5
-                            anchors.left: hardware_info_scrollview.left
-                            anchors.leftMargin: 5
-
-                            spacing: 5
-
-                            delegate: hardware_scroll_list_viem_component
-                            model: ListModel
-                            {
-                                ListElement { name: "硬件版本：" }
-                                ListElement { name: "    型号：" }
-                                ListElement { name: "  序列号：" }
-                            }
-
-                            Component
-                            {
-                                id: hardware_scroll_list_viem_component
-
-                                Row
-                                {
-                                    Text
-                                    {
-                                        padding: 5
-
-                                        text: qsTr(name)
-                                        elide: Text.ElideLeft
-                                        font.pixelSize: 15
-                                    }
-
-                                    TextInput
-                                    {
-                                        width: 100
-
-                                        focus: true
-                                        autoScroll: false
-
-                                        font.pointSize: 15
-
-                                        onTextEdited:
-                                        {
-                                            if(length > 0)
-                                            {
-                                                save_button.enabled = true
-                                                cancel_button.enabled = true
-                                            }
-                                            else
-                                            {
-                                                save_button.enabled = false
-                                                cancel_button.enabled = false
-                                            }
-                                        }
-                                    }
-
-                                    Button
-                                    {
-                                        id: save_button
-
-                                        enabled: false
-
-                                        width: 50; height: 15
-
-                                        text: qsTr("✔")
-
-                                        onClicked:
-                                        {
-                                            // TODO(huangchsh): 触发保存事件
-                                        }
-                                    }
-
-                                    Button
-                                    {
-                                        id: cancel_button
-
-                                        enabled: false
-
-                                        anchors.right: hardware_scroll_list_viem_component.right
-                                        anchors.rightMargin: 10
-
-                                        width: 50; height: 15
-
-                                        text: qsTr("×")
-
-                                        onClicked:
-                                        {
-                                            // TODO(huangchsh): 触发取消事件，将参数复原
-                                        }
                                     }
                                 }
                             }
@@ -333,11 +231,15 @@ Item
         {
             id: buttons_column
 
+            width: parent.width * 0.02
+
             spacing: 5
 
             Button
             {
                 id: upload_button
+
+                Layout.alignment: Qt.AlignCenter
 
                 text: qsTr("上传")
             }
@@ -346,6 +248,8 @@ Item
             {
                 id: update_button
 
+                Layout.alignment: Qt.AlignCenter
+
                 text: qsTr("更新")
             }
 
@@ -353,12 +257,16 @@ Item
             {
                 id: cloud_url_button
 
+                Layout.alignment: Qt.AlignCenter
+
                 text: qsTr("云URL")
             }
 
             Button
             {
                 id: quit_button
+
+                Layout.alignment: Qt.AlignCenter
 
                 text: qsTr("返回")
 
