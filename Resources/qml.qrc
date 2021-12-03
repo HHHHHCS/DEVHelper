@@ -10,5 +10,9 @@
     </qresource>
     <qresource prefix="/">
         <file>../Images/xunyi.png</file>
+        <file>../Images/left_button.jpg</file>
+        <file>../Images/right_button.png</file>
+        <file>../Images/RC3.png</file>
+        <file>../Images/UAV.png</file>
     </qresource>
 </RCC>

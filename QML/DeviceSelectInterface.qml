@@ -28,9 +28,9 @@ Item
 
         delegate: flipCardDelegate
         model: ListModel {
-            ListElement { name: "RCX"; image: ""; }
-            ListElement { name: "UAV"; image: ""; }
-            ListElement { name: "BA"; image: ""; }
+            ListElement { name: "RCX"; image: "qrc:/Images/RC3.png"; }
+            ListElement { name: "UAV"; image: "qrc:/Images/UAV.png"; }
+            // ListElement { name: "BA"; image: ""; }
         }
 
         pathItemCount: 3
@@ -100,9 +100,6 @@ Item
                     id: path_view_item
                     anchors.fill: parent
 
-                    border.color: "Black"
-                    border.width: 3
-
                     Text
                     {
                         anchors.centerIn: parent
@@ -112,6 +109,7 @@ Item
 
                     Image
                     {
+                        anchors.fill: parent
                         source: image
                     }
 
@@ -124,7 +122,7 @@ Item
                         {                            
                             if(is_current_item)
                             {
-                                path_view_item.border.color = "Red"
+                                // TODO(huangchsh): 增加图片渲染
                             }
                         }
 
@@ -132,7 +130,7 @@ Item
                         {
                             if(is_current_item)
                             {
-                                path_view_item.border.color = "Black"
+                                // TODO(huangchsh): 增加图片渲染
                             }
                         }
 
@@ -158,15 +156,14 @@ Item
         width: parent.width * 0.2; height: parent.height
         anchors.left: parent.left
 
-        Image
+        background: Image
         {
-            source: ""
+            source: "qrc:/Images/left_button.jpg"
         }
 
-        MouseArea 
+        onClicked: 
         {
-            anchors.fill: parent
-            onClicked: view.decrementCurrentIndex();
+            view.decrementCurrentIndex();            
         }
     }
     // 右切
@@ -177,15 +174,14 @@ Item
         width: parent.width * 0.2; height: parent.height
         anchors.right: parent.right
 
-        Image
+        background: Image
         {
-            source: ""
+            source: "qrc:/Images/right_button.png"
         }
 
-        MouseArea 
+        onClicked: 
         {
-            anchors.fill: parent
-            onClicked: view.incrementCurrentIndex();
+            view.incrementCurrentIndex();
         }
     }
 }
