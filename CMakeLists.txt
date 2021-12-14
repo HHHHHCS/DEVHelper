@@ -24,29 +24,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #    endif()
 #endif()
 
-find_package(Qt5 
-COMPONENTS 
-  Core 
-  Quick 
+find_package(Qt5
+COMPONENTS
+  Core
+  Quick
   Qml
+  SerialBus
+  SerialPort
 REQUIRED)
 
-if(ANDROID)
-    add_library(DEVHelper SHARED
-      src/main.cpp
-      Resources/qml.qrc
-    )
-else()
-    add_executable(DEVHelper
-      src/main.cpp
-      Resources/qml.qrc
-    )
-endif()
+add_executable(DEVHelper
+  src/main.cpp
+  src/lib/serial/q_serial.cpp
+  Resources/qml.qrc
+)
 
 target_compile_definitions(DEVHelper
   PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 target_link_libraries(DEVHelper
-PRIVATE 
-  Qt5::Core 
+PRIVATE
+  Qt5::Core
   Qt5::Quick
-  Qt5::Qml)
+  Qt5::Qml
+  Qt5::SerialBus
+  Qt5::SerialPort)
