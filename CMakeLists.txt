@@ -28,6 +28,7 @@ find_package(Qt5
 COMPONENTS
   Core
   Quick
+  Widgets
   Qml
   SerialBus
   SerialPort
@@ -35,8 +36,9 @@ REQUIRED)
 
 add_executable(DEVHelper
   src/main.cpp
+  src/dev_helper_application.cpp
   src/lib/serial/q_serial.cpp
-  Resources/qml.qrc
+  ui/Resources/qml.qrc
 )
 
 target_compile_definitions(DEVHelper
@@ -46,5 +48,6 @@ PRIVATE
   Qt5::Core
   Qt5::Quick
   Qt5::Qml
+  Qt5::Widgets
   Qt5::SerialBus
   Qt5::SerialPort)
