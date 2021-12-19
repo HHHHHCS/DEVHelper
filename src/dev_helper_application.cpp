@@ -2,7 +2,7 @@
 
 
 using namespace dev_helper;
-using namespace agent;
+using namespace app;
 
 DevHelperApplication* DevHelperApplication::m_s_app_inst = nullptr;
 

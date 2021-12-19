@@ -8,8 +8,7 @@
 
 namespace dev_helper
 {
-
-namespace agent
+namespace app
 {
     class DevHelperApplication : public QApplication
     {
@@ -33,5 +32,4 @@ namespace agent
 
     DevHelperApplication* devHelperApp(void);
 }   // namespace dev_helper
-
 }   // namespace agent
