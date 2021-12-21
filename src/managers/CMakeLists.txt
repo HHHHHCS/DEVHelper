@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt5
 REQUIRED COMPONENTS
   Core
+  Qml
   Widgets
 )
 
@@ -29,5 +30,6 @@ add_library(${PROJECT_NAME} STATIC
 target_link_libraries(${PROJECT_NAME}
 PRIVATE
   Qt5::Core
+  Qt5::Qml
   Qt5::Widgets
 )

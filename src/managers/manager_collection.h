@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include <QObject>
 #include <QApplication>
 
 #include "link_manager/link_manager.h"
@@ -11,8 +12,10 @@
 
 namespace managers
 {
-    class ManagerCollection
+    class ManagerCollection : public QObject
     {
+        Q_OBJECT
+
         public:
             ManagerCollection(QApplication *app);
             ~ManagerCollection();

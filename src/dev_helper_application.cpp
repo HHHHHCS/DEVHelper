@@ -8,33 +8,45 @@ DevHelperApplication* DevHelperApplication::m_s_app_inst = nullptr;
 
 DevHelperApplication::DevHelperApplication(int &argc, char* argv[])
     : QApplication(argc, argv)
-    , m_qml_qpp_engine(nullptr)
+    , m_p_qml_app_engine(nullptr)
+    , m_p_man_collect(nullptr)
 {
     m_s_app_inst = this;
+
+    // TODO(huangchsh): 创建QTimer记录运行时长及启动时间
+
+    m_p_man_collect = new managers::ManagerCollection(m_s_app_inst);
+    Q_CHECK_PTR(m_p_man_collect);
 }
 
 DevHelperApplication::~DevHelperApplication()
 {
-    if(m_qml_qpp_engine)
+    if(m_p_qml_app_engine)
     {
-        delete m_qml_qpp_engine;
+        delete m_p_qml_app_engine;
     }
 
-    m_qml_qpp_engine = nullptr;
+    if(m_p_man_collect)
+    {
+        delete m_p_man_collect;
+    }
+
+    m_p_qml_app_engine = nullptr;
+    m_p_man_collect = nullptr;
 }
 
 void DevHelperApplication::shutdown()
 {
-    delete m_qml_qpp_engine;
+    delete m_p_qml_app_engine;
+    delete m_p_man_collect;
 }
 
 bool DevHelperApplication::bootMainWindow()
 {
-    m_qml_qpp_engine = new QQmlApplicationEngine(this);
-    Q_CHECK_PTR(m_qml_qpp_engine);
+    m_p_qml_app_engine = man_collection()->main_man()->createQMLAppEngine(this);
+    m_p_man_collect->main_man()->createMainWindow(m_p_qml_app_engine);
 
-    m_qml_qpp_engine->load(QUrl(QStringLiteral("qrc:/QML/main.qml")));
-    if(m_qml_qpp_engine->rootObjects().isEmpty())
+    if(m_p_qml_app_engine->rootObjects().isEmpty())
     {
         return false;
     }

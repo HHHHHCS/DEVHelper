@@ -34,16 +34,22 @@ aux_source_directory(./src SRCS_DIR)
 
 add_subdirectory(./src/lib dev_helper_lib)
 add_subdirectory(./src/managers managers)
-add_subdirectory(./ui ui_lib)
+# add_subdirectory(./ui ui_lib)
 
 add_executable(${PROJECT_NAME}
   ${SRCS_DIR}
+  ./ui/Resources/qml.qrc
+)
+
+target_compile_definitions(${PROJECT_NAME}
+PRIVATE 
+  $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
 )
 
 add_dependencies(${PROJECT_NAME}
   dev_helper_lib  
   managers
-  ui_lib
+  # ui_lib
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -52,5 +58,5 @@ PRIVATE
   Qt5::Widgets
   dev_helper_lib
   managers
-  ui_lib
+  # ui_lib
 )

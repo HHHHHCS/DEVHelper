@@ -4,7 +4,7 @@
 using namespace managers;
 
 ParametersManager::ParametersManager(ManagerCollection* man_collect)
-    : QObject(nullptr)
+    : QObject(reinterpret_cast<QObject*>(man_collect))
     , m_p_manager_collect(man_collect)
 {
 

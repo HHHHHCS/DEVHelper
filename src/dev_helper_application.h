@@ -5,6 +5,8 @@
 
 #include <QDebug>
 
+#include "managers/manager_collection.h"
+
 
 namespace dev_helper
 {
@@ -19,6 +21,8 @@ namespace app
             DevHelperApplication(int &argc, char* argv[]);
             ~DevHelperApplication();
 
+            ::managers::ManagerCollection *man_collection() const { return m_p_man_collect; }
+
         public:
             static DevHelperApplication* m_s_app_inst;
 
@@ -27,9 +31,10 @@ namespace app
             void shutdown();
 
         private:
-            QQmlApplicationEngine *m_qml_qpp_engine;
+            QQmlApplicationEngine *m_p_qml_app_engine;
+            ::managers::ManagerCollection *m_p_man_collect;
     };
 
     DevHelperApplication* devHelperApp(void);
+}   // namespace app
 }   // namespace dev_helper
-}   // namespace agent
