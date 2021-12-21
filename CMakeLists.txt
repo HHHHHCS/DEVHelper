@@ -25,29 +25,32 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #endif()
 
 find_package(Qt5
-COMPONENTS
-  Core
-  Quick
-  Widgets
+REQUIRED COMPONENTS
   Qml
-  SerialBus
-  SerialPort
-REQUIRED)
-
-add_executable(DEVHelper
-  src/main.cpp
-  src/dev_helper_application.cpp
-  src/lib/serial/q_serial.cpp
-  ui/Resources/qml.qrc
+  Widgets
 )
 
-target_compile_definitions(DEVHelper
-  PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
-target_link_libraries(DEVHelper
+aux_source_directory(./src SRCS_DIR)
+
+add_subdirectory(./src/lib dev_helper_lib)
+add_subdirectory(./src/managers managers)
+add_subdirectory(./ui ui_lib)
+
+add_executable(${PROJECT_NAME}
+  ${SRCS_DIR}
+)
+
+add_dependencies(${PROJECT_NAME}
+  dev_helper_lib  
+  managers
+  ui_lib
+)
+
+target_link_libraries(${PROJECT_NAME}
 PRIVATE
-  Qt5::Core
-  Qt5::Quick
   Qt5::Qml
   Qt5::Widgets
-  Qt5::SerialBus
-  Qt5::SerialPort)
+  dev_helper_lib
+  managers
+  ui_lib
+)
