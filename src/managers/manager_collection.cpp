@@ -1,4 +1,7 @@
-#include "manager_collection.h"
+#include "link_manager/link_manager.h"
+#include "main_manager/main_manager.h"
+#include "parameters_manager/parameters_manager.h"
+#include "upgrade_manager/upgrade_manager.h"
 
 
 using namespace managers;
@@ -11,11 +14,11 @@ ManagerCollection::ManagerCollection(QApplication *app)
     , m_p_param_man(nullptr)
     , m_p_upgrade_man(nullptr)
 {
-    m_p_main_man = new MainManager(this);
+    m_p_main_man = new MainManager(app, this);
 
-    m_p_link_man = new LinkManager(this);
-    m_p_param_man = new ParametersManager(this);
-    m_p_upgrade_man = new UpgradeManager(this);
+    m_p_link_man = new LinkManager(app, this);
+    m_p_param_man = new ParametersManager(app, this);
+    m_p_upgrade_man = new UpgradeManager(app, this);
 }
 
 ManagerCollection::~ManagerCollection()
@@ -24,4 +27,15 @@ ManagerCollection::~ManagerCollection()
     delete m_p_param_man;
     delete m_p_upgrade_man;
     delete m_p_main_man;
+}
+
+Manager::Manager(QApplication *app, ManagerCollection *man_collect)
+    : QObject(man_collect)
+    , m_app(app)
+    , m_man_collect(man_collect) 
+{
+}
+
+Manager::~Manager()
+{
 }

@@ -2,19 +2,20 @@
 
 #include <QObject>
 
+#include "../manager_collection.h"
+
 
 namespace managers
 {
-    class ManagerCollection;
-    class UpgradeManager : public QObject
+    class UpgradeManager : public Manager
     {
         Q_OBJECT
 
         public:
-            UpgradeManager(ManagerCollection* man_collect);
+            UpgradeManager(QApplication *app, ManagerCollection* man_collect);
             ~UpgradeManager();
 
         private:
-            ManagerCollection* m_p_manager_collect;
+
     };
 }   // namespace managers

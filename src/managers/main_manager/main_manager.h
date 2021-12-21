@@ -3,16 +3,17 @@
 #include <QObject>
 #include <QQmlApplicationEngine>
 
+#include "../manager_collection.h"
+
 
 namespace managers
 {
-    class ManagerCollection;
-    class MainManager : public QObject
+    class MainManager : public Manager
     {
         Q_OBJECT
 
         public:
-            MainManager(ManagerCollection* man_collect);
+            MainManager(QApplication *app, ManagerCollection* man_collect);
             ~MainManager();
 
             /** 
@@ -28,7 +29,6 @@ namespace managers
             // TODO(hunagchsh): 增加Image Provider
 
         private:
-            ManagerCollection* m_p_manager_collect;
 
     };
 

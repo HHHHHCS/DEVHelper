@@ -1,9 +1,8 @@
 #pragma once
 
 #include <QApplication>
-#include <QQmlApplicationEngine>
-
 #include <QDebug>
+#include <QQmlApplicationEngine>
 
 #include "managers/manager_collection.h"
 
@@ -12,6 +11,7 @@ namespace dev_helper
 {
 namespace app
 {
+    class ::managers::ManagerCollection;
     class DevHelperApplication : public QApplication
     {
         Q_OBJECT

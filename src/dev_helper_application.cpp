@@ -44,7 +44,7 @@ void DevHelperApplication::shutdown()
 bool DevHelperApplication::bootMainWindow()
 {
     m_p_qml_app_engine = man_collection()->main_man()->createQMLAppEngine(this);
-    m_p_man_collect->main_man()->createMainWindow(m_p_qml_app_engine);
+    man_collection()->main_man()->createMainWindow(m_p_qml_app_engine);
 
     if(m_p_qml_app_engine->rootObjects().isEmpty())
     {

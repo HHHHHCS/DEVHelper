@@ -3,9 +3,8 @@
 
 using namespace managers;
 
-UpgradeManager::UpgradeManager(ManagerCollection* man_collect)
-    : QObject(reinterpret_cast<QObject*>(man_collect))
-    , m_p_manager_collect(man_collect)
+UpgradeManager::UpgradeManager(QApplication *app, ManagerCollection* man_collect)
+    : Manager(app, man_collect)
 {
 
 }

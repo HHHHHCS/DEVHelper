@@ -2,19 +2,20 @@
 
 #include <QObject>
 
+#include "../manager_collection.h"
+
 
 namespace managers
 {
-    class ManagerCollection;
-    class ParametersManager : public QObject
+    class ParametersManager : public Manager
     {
         Q_OBJECT
 
         public:
-            ParametersManager(ManagerCollection* man_collect);
+            ParametersManager(QApplication *app, ManagerCollection* man_collect);
             ~ParametersManager();
 
         private:
-            ManagerCollection* m_p_manager_collect;
+
     };
 }   // namespace managers

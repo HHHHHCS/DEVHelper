@@ -3,16 +3,14 @@
 
 using namespace managers;
 
-MainManager::MainManager(ManagerCollection* man_collect)
-    : QObject(reinterpret_cast<QObject*>(man_collect))
-    , m_p_manager_collect(man_collect)
+MainManager::MainManager(QApplication *app, ManagerCollection* man_collect)
+    : Manager(app, man_collect)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
 MainManager::~MainManager()
 {
-    m_p_manager_collect = nullptr;
 }
 
 QQmlApplicationEngine* MainManager::createQMLAppEngine(QObject *parent /* = nullptr */)

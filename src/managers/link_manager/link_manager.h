@@ -2,19 +2,20 @@
 
 #include <QObject>
 
+#include "../manager_collection.h"
+
 
 namespace managers
 {
-    class ManagerCollection;
-    class LinkManager : public QObject
+    class LinkManager : public Manager
     {
         Q_OBJECT
 
         public:
-            LinkManager(ManagerCollection* man_collect);
+            LinkManager(QApplication *app, ManagerCollection* man_collect);
             ~LinkManager();
 
         private:
-            ManagerCollection* m_p_manager_collect;
+
     };
 }   // namespace dev_helper
