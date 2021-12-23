@@ -1,3 +1,5 @@
+#include "managers/main_manager/main_manager.h"
+
 #include "dev_helper_application.h"
 
 
