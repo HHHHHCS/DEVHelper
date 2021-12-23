@@ -23,10 +23,6 @@ namespace communication
             void bytesSend(Link *link, QByteArray &data);
 
             void commError(const QString &title, const QString &error);
-            void signalInvokeWriteBytes(QByteArray&);
-
-        private Q_SLOTS:
-            virtual void privateSlotWriteBytes(const QByteArray&) = 0;
 
         public:
             virtual ~Link();
@@ -38,7 +34,7 @@ namespace communication
             void writeBytesThreadSafe(const char *bytes, int length);
             void addLinkCounts();
             void removeLinkCounts();
-        
+
         public:
             Q_INVOKABLE virtual void disconnect() = 0;
 
@@ -50,9 +46,11 @@ namespace communication
             void connectionRemoved();
 
         private:
+            mutable QMutex m_write_bytes_mutex;
             int m_link_counts;
 
             virtual bool connect() = 0;
+            virtual void writeBytes(const QByteArray) = 0;
     };
     using SharedLinkPtr = std::shared_ptr<Link>;
     using WeakLinkPtr = std::weak_ptr<Link>;

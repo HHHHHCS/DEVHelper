@@ -43,7 +43,7 @@ const QString LinkConfiguration::getSettingsRoot()
     return QString(LINK_SETTING_ROOT);
 }
 
-LinkConfiguration* LinkConfiguration::createSettings(int type, const QString &name)
+LinkConfiguration* LinkConfiguration::createSettings(LinkConfiguration::LinkType type, const QString &name)
 {
     LinkConfiguration* cfg = nullptr;
     switch(type)

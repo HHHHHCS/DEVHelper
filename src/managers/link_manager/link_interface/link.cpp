@@ -1,30 +1,31 @@
 #include <QQmlApplicationEngine>
 
-#include "../link_manager.h"
+#include "link_manager.h"
 
 #include "link.h"
 
 
 using namespace communication;
 
-Link::Link()
+Link::Link(SharedLinkConfigurationPtr &config)
     : QThread(nullptr)
     , m_link_counts(0)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
-    qRegisterMetaType<Link>("Communication::Link");
-
-    QObject::connect(this, &Link::signalInvokeWriteBytes, this, &Link::privateSlotWriteBytes);
+    qRegisterMetaType<Link*>("communication::Link");
 }
 
 Link::~Link()
 {
-    m_config.reset();
+    m_p_config.reset();
 }
 
 void Link::writeBytesThreadSafe(const char *bytes, int length)
 {
-    Q_EMIT signalInvokeWriteBytes(QByteArray(bytes, length));
+    QByteArray byteArray(bytes, length);
+    m_write_bytes_mutex.lock();
+    writeBytes(byteArray);
+    m_write_bytes_mutex.unlock();
 }
 
 void Link::addLinkCounts()

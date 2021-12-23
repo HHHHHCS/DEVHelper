@@ -42,18 +42,18 @@ add_executable(${PROJECT_NAME}
 )
 
 target_compile_definitions(${PROJECT_NAME}
-PRIVATE 
+PRIVATE
   $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
 )
 
 add_dependencies(${PROJECT_NAME}
-  dev_helper_lib  
+  dev_helper_lib
   managers
   # ui_lib
 )
 
 target_link_libraries(${PROJECT_NAME}
-PRIVATE
+PUBLIC
   Qt5::Qml
   Qt5::Widgets
   dev_helper_lib
