@@ -14,13 +14,14 @@ add_library(dev_helper_src
 
 target_link_libraries(dev_helper_src
 PUBLIC
-  Qt5::Core
-  Qt5::Qml
-  Qt5::Widgets
+    Qt5::Core
+    Qt5::Qml
+    Qt5::Widgets
 
-  managers
-  libs
-  # ui_lib
+    serial_lib
+
+    managers
+    # ui_lib
 )
 
 target_include_directories(dev_helper_src
