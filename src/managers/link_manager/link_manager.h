@@ -2,7 +2,7 @@
 
 #include <QObject>
 
-#include "../manager_collection.h"
+#include "manager_collection.h"
 
 
 namespace managers

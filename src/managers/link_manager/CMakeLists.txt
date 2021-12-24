@@ -1,26 +1,23 @@
-aux_source_directory(./link_interface LINK_ITF_DIR)
-aux_source_directory(./proto_interface PROTO_ITF_DIR)
+set(LINK_ITF_DIR link_interface)
+set(PROTO_ITF_DIR proto_interface)
 
 add_library(link_manager
-    ${LINK_ITF_DIR}
-    ${PROTO_ITF_DIR}
-)
-
-add_dependencies(link_manager
-    dev_helper_lib
+    link_manager.cpp
+    link_manager.h
+    ${LINK_ITF_DIR}/link_configuration.cpp
+    ${LINK_ITF_DIR}/link_configuration.h
+    ${LINK_ITF_DIR}/link.cpp
+    ${LINK_ITF_DIR}/link.h
+    ${PROTO_ITF_DIR}/proto.cpp
+    ${PROTO_ITF_DIR}/proto.h
 )
 
 target_link_libraries(link_manager
-PUBLIC
-    Qt5::Core
-    Qt5::Qml
-    Qt5::Widgets
-    dev_helper_lib
+PRIVATE
+    dev_helper_src
 )
 
 target_include_directories(link_manager
 INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    link_interface
-    proto_interface
 )

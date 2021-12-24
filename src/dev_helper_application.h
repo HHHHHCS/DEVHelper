@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QQmlApplicationEngine>
 
-#include "managers/manager_collection.h"
+#include "manager_collection.h"
 
 
 namespace dev_helper

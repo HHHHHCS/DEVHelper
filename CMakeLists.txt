@@ -26,19 +26,26 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt5
 REQUIRED COMPONENTS
+  Core
   Qml
+  Quick
+  QuickControls2
+  QuickWidgets
   Widgets
+
+  SerialBus
+  SerialPort
 )
 
-aux_source_directory(./src SRCS_DIR)
+set(RESOURCES
+  ${CMAKE_CURRENT_SOURCE_DIR}/ui/Resources/qml.qrc
+)
 
-add_subdirectory(./src/lib dev_helper_lib)
-add_subdirectory(./src/managers managers)
-# add_subdirectory(./ui ui_lib)
+add_subdirectory(src)
+# add_subdirectory(ui)
 
 add_executable(${PROJECT_NAME}
-  ${SRCS_DIR}
-  ./ui/Resources/qml.qrc
+  ${RESOURCES}
 )
 
 target_compile_definitions(${PROJECT_NAME}
@@ -46,17 +53,8 @@ PRIVATE
   $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
 )
 
-add_dependencies(${PROJECT_NAME}
-  dev_helper_lib
-  managers
-  # ui_lib
-)
-
 target_link_libraries(${PROJECT_NAME}
-PUBLIC
-  Qt5::Qml
-  Qt5::Widgets
-  dev_helper_lib
-  managers
+PRIVATE
+  dev_helper_src
   # ui_lib
 )

@@ -1,23 +1,29 @@
 add_subdirectory(link_manager)
+add_subdirectory(main_manager)
+add_subdirectory(parameters_manager)
+add_subdirectory(upgrade_manager)
 
-aux_source_directory(. MAN_SRC_DIR)
-aux_source_directory(./main_manager MAIN_MAN_SRC_DIR)
-aux_source_directory(./parameters_manager PARAMETERS_MAN_SRC_DIR)
-aux_source_directory(./upgrade_manager UPGRADE_MAN_SRC_DIR)
-
-add_library(managers STATIC
-    ${MAN_SRC_DIR}
-    ${MAIN_MAN_SRC_DIR}
-    ${PARAMETERS_MAN_SRC_DIR}
-    ${UPGRADE_MAN_SRC_DIR}
+add_library(managers
+    manager_collection.cpp
+    manager_collection.h
 )
 
 target_link_libraries(managers
-PRIVATE
-  Qt5::Core
-  Qt5::Qml
-  Qt5::Widgets
-  dev_helper_lib
-
+PUBLIC
   link_manager
+  main_manager
+  parameters_manager
+  upgrade_manager
+PRIVATE
+  dev_helper_src
+)
+
+target_include_directories(managers
+INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR}
+PRIVATE
+  link_manager
+  main_manager
+  parameters_manager
+  upgrade_manager
 )

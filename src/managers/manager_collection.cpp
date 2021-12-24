@@ -1,7 +1,7 @@
-#include "link_manager/link_manager.h"
-#include "main_manager/main_manager.h"
-#include "parameters_manager/parameters_manager.h"
-#include "upgrade_manager/upgrade_manager.h"
+#include "link_manager.h"
+#include "main_manager.h"
+#include "parameters_manager.h"
+#include "upgrade_manager.h"
 
 
 using namespace managers;

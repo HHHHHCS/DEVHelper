@@ -1,4 +1,4 @@
-#include "lib/serial/q_serial.h"
+#include "q_serial.h"
 
 #include "link_configuration.h"
 
@@ -11,7 +11,7 @@ LinkConfiguration::LinkConfiguration(const QString &name)
     : m_name(name)
     , m_dynamic(false)
     , m_auto_connect(false)
-    , m_high_lantency(false)
+    , m_high_latency(false)
 {
 
 }
@@ -22,7 +22,7 @@ LinkConfiguration::LinkConfiguration(LinkConfiguration &obj)
     m_name = obj.getName();
     m_dynamic = obj.getDynamic();
     m_auto_connect = obj.getAutoConnect();
-    m_high_lantency = obj.getHighLantency();
+    m_high_latency = obj.getHighLatency();
 
     Q_ASSERT(!m_name.isEmpty());
 }
@@ -33,7 +33,7 @@ LinkConfiguration& LinkConfiguration::operator=(const LinkConfiguration& src)
     m_name = src.getName();
     m_dynamic = src.getDynamic();
     m_auto_connect = src.getAutoConnect();
-    m_high_lantency = src.getHighLantency();
+    m_high_latency = src.getHighLatency();
 
     return *this;
 }
@@ -92,5 +92,5 @@ LinkConfiguration* LinkConfiguration::duplicateSettings(LinkConfiguration &src)
         }
     }
 
-    return cfg;
+    return dup;
 }
