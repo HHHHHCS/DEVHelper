@@ -1,2 +1,2 @@
-add_subdirectory(communication/serial)
+add_subdirectory(communication)
 # add_subdirectory(protos)

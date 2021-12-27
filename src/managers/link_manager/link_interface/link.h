@@ -1,19 +1,16 @@
 #pragma once
 
 #include <QThread>
-#include <QMutex>
 #include <QMutexLocker>
 #include <QDebug>
+#include <QQmlApplicationEngine>
 
 #include <memory>
-
-#include "Link_configuration.h"
 
 
 namespace communication
 {
     class LinkManager;
-
     class Link : public QThread
     {
         Q_SIGNALS:
@@ -24,34 +21,30 @@ namespace communication
 
             void commError(const QString &title, const QString &error);
 
-        public:
-            virtual ~Link();
-
-            virtual bool getConnected() const = 0;
-
-            SharedLinkConfigurationPtr linkConfiguration() const { return m_p_config; }
-
-            void writeBytesThreadSafe(const char *bytes, int length);
-            void addLinkCounts();
-            void removeLinkCounts();
+        private Q_SLOTS:
+            virtual void writeBytes(const QByteArray&) = 0;
 
         public:
             Q_INVOKABLE virtual void disconnect() = 0;
 
+        public:
+            virtual ~Link();
+
+            virtual bool getConnected() const = 0;
+            virtual bool getFindPortsListFlag() const = 0;
+            virtual QStringList getPortNameList() const = 0;
+
         protected:
-            Link(SharedLinkConfigurationPtr &config);
-
-            SharedLinkConfigurationPtr m_p_config;
-
-            void connectionRemoved();
+            Link()
+                : QThread(nullptr)
+            {
+                QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
+                qRegisterMetaType<Link*>("communication::Link");
+            }
 
         private:
-            mutable QMutex m_write_bytes_mutex;
-            int m_link_counts;
-
             virtual bool connect() = 0;
-            virtual void writeBytes(const QByteArray) = 0;
     };
     using SharedLinkPtr = std::shared_ptr<Link>;
     using WeakLinkPtr = std::weak_ptr<Link>;
-}
+}   // namespace communication

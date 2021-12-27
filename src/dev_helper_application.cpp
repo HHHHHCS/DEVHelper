@@ -1,4 +1,5 @@
 #include "main_manager.h"
+#include "link_manager.h"
 
 #include "dev_helper_application.h"
 
@@ -52,6 +53,8 @@ bool DevHelperApplication::bootMainWindow()
     {
         return false;
     }
+
+    man_collection()->link_man()->foundLinksList();
 
     return true;
 }

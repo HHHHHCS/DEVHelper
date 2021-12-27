@@ -14,7 +14,7 @@ using namespace managers;
 LinkManager::LinkManager(QApplication *app, ManagerCollection* man_collect)
     : Manager(app, man_collect)
 {
-
+    // TODO(huangchsh): 创建连接
 }
 
 LinkManager::~LinkManager()
@@ -22,7 +22,9 @@ LinkManager::~LinkManager()
 
 }
 
-void loadLinkConfigurationList()
+int LinkManager::foundLinksList()
 {
-    
+    // TODO(huangchsh): 扫描USB列表
+    // TODO(huangchsh): 扫描网络列表
+    return 0;
 }

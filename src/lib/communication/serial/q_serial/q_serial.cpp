@@ -6,6 +6,12 @@
 using namespace dev_helper;
 using namespace dev_helper::port_lib;
 
+SerialPort::SerialPort()
+    : QSerialPort()
+    , m_is_port_found(false)
+{
+}
+
 SerialPort::SerialPort(qint32 baud_rate /* = QSerialPort::Baud115200 */,
                     DataBits data_bits /* = QSerialPort::Data8 */,
                     Parity parity /* = QSerialPort::NoParity */,
@@ -47,25 +53,42 @@ SerialPort::~SerialPort()
     closePort();
 }
 
-bool SerialPort::findPort(const QString desc)
+bool SerialPort::findPortsList()
 {
     if(this->isOpen())
     {
         qInfo("Port is open now, please close it first.");
     }
 
-    const auto ports_list = QSerialPortInfo::availablePorts();
-    for(const QSerialPortInfo &info : ports_list)
+    const auto list = QSerialPortInfo::availablePorts();
+    if(!list.isEmpty())
     {
-        if(info.description() == desc)
+        quint16 num = 0;
+        for(auto &info : list)
         {
-            qDebug("Succeed to set port ");
-            m_is_port_found = true;
+            PortInfoStru port_info_stru;
 
-            this->setPortName(info.portName());
-            this->setPort(info);
-            return true;
+            port_info_stru.name = info.portName();
+            port_info_stru.system_location = info.systemLocation();
+            port_info_stru.description = info.description();
+            port_info_stru.manufacturer = info.manufacturer();
+            port_info_stru.serial_number = info.serialNumber();
+
+            if(info.hasVendorIdentifier())
+            {
+                port_info_stru.vendor_identifier = info.vendorIdentifier();
+            }
+
+            if(info.hasProductIdentifier())
+            {
+                port_info_stru.product_identifier = info.productIdentifier();
+            }
+
+            m_ports_name_map.insert(num, port_info_stru);
+
+            ++num;
         }
+        return true;
     }
 
     return false;
@@ -87,6 +110,8 @@ bool SerialPort::openPort()
             auto ret = this->open(QIODevice::ReadWrite);
             if(ret)
             {
+                this->setDataTerminalReady(true);
+
                 qInfo("Succeed to open port, finally retry time %d.", (5 - retry_times));
                 return true;
             }
@@ -114,6 +139,7 @@ void SerialPort::closePort()
     }
 
     this->close();
+    this->deleteLater();
 }
 
 qint64 SerialPort::readPort(QByteArray &buffer)
@@ -130,7 +156,12 @@ qint64 SerialPort::readPort(QByteArray &buffer)
         return -2;
     }
 
-    buffer = this->readAll();
+    QMutexLocker locker(&m_read_mutex);
+    qint64 byte_counts = this->bytesAvailable();
+    if(byte_counts)
+    {
+        buffer = this->readAll();
+    }
 
     return buffer.count();
 }
@@ -149,8 +180,8 @@ qint64 SerialPort::writePort(QByteArray &buffer)
         return -2;
     }
 
+    QMutexLocker locker(&m_write_mutex);
     auto send_counts = this->write(buffer);
-
     qDebug() << "Send bytes:" << buffer;
 
     return send_counts;
