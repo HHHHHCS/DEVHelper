@@ -1,11 +1,11 @@
 #pragma once
 
+#include <memory>
+
 #include <QThread>
 #include <QMutexLocker>
 #include <QDebug>
 #include <QQmlApplicationEngine>
-
-#include <memory>
 
 
 namespace communication
@@ -13,7 +13,9 @@ namespace communication
     class LinkManager;
     class Link : public QThread
     {
-        Q_SIGNALS:
+        friend class LinkManager;
+
+        signals:
             void connected();
             void disconnected();
             void bytesReceived(Link *link, QByteArray &data);
@@ -21,18 +23,16 @@ namespace communication
 
             void commError(const QString &title, const QString &error);
 
-        private Q_SLOTS:
+        private slots:
             virtual void writeBytes(const QByteArray&) = 0;
 
         public:
             Q_INVOKABLE virtual void disconnect() = 0;
 
         public:
-            virtual ~Link();
+            virtual ~Link() {};
 
             virtual bool getConnected() const = 0;
-            virtual bool getFindPortsListFlag() const = 0;
-            virtual QStringList getPortNameList() const = 0;
 
         protected:
             Link()

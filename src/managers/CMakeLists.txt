@@ -10,20 +10,14 @@ add_library(managers
 
 target_link_libraries(managers
 PUBLIC
+  dev_helper_src
   link_manager
   main_manager
   parameters_manager
   upgrade_manager
-PRIVATE
-  dev_helper_src
 )
 
 target_include_directories(managers
-INTERFACE
+PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
-PRIVATE
-  link_manager
-  main_manager
-  parameters_manager
-  upgrade_manager
 )

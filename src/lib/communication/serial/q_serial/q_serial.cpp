@@ -3,22 +3,14 @@
 #include "q_serial.h"
 
 
-using namespace dev_helper;
-using namespace dev_helper::port_lib;
+using namespace port_lib;
 
-SerialPort::SerialPort()
+SerialPort::SerialPort(qint32 baud_rate,
+                        QDataBits data_bits,
+                        QParity parity,
+                        QStopBits stop_bits,
+                        QFlowControl flow_control)
     : QSerialPort()
-    , m_is_port_found(false)
-{
-}
-
-SerialPort::SerialPort(qint32 baud_rate /* = QSerialPort::Baud115200 */,
-                    DataBits data_bits /* = QSerialPort::Data8 */,
-                    Parity parity /* = QSerialPort::NoParity */,
-                    StopBits stop_bits /* = QSerialPort::OneStop */,
-                    FlowControl flow_control /* = QSerialPort::NoFlowControl */)
-    : QSerialPort()
-    , m_is_port_found(false)
 {
     if(baud_rate < 0)
     {
@@ -35,14 +27,12 @@ SerialPort::SerialPort(qint32 baud_rate /* = QSerialPort::Baud115200 */,
 
 SerialPort::SerialPort(const QString &port_name)
     : QSerialPort()
-    , m_is_port_found(false)
 {
     this->setPortName(port_name);
 }
 
 SerialPort::SerialPort(const QString &port_name, qint32 baud_rate)
     : QSerialPort()
-    , m_is_port_found(false)
 {
     this->setPortName(port_name);
     this->setBaudRate(baud_rate);
@@ -53,55 +43,8 @@ SerialPort::~SerialPort()
     closePort();
 }
 
-bool SerialPort::findPortsList()
-{
-    if(this->isOpen())
-    {
-        qInfo("Port is open now, please close it first.");
-    }
-
-    const auto list = QSerialPortInfo::availablePorts();
-    if(!list.isEmpty())
-    {
-        quint16 num = 0;
-        for(auto &info : list)
-        {
-            PortInfoStru port_info_stru;
-
-            port_info_stru.name = info.portName();
-            port_info_stru.system_location = info.systemLocation();
-            port_info_stru.description = info.description();
-            port_info_stru.manufacturer = info.manufacturer();
-            port_info_stru.serial_number = info.serialNumber();
-
-            if(info.hasVendorIdentifier())
-            {
-                port_info_stru.vendor_identifier = info.vendorIdentifier();
-            }
-
-            if(info.hasProductIdentifier())
-            {
-                port_info_stru.product_identifier = info.productIdentifier();
-            }
-
-            m_ports_name_map.insert(num, port_info_stru);
-
-            ++num;
-        }
-        return true;
-    }
-
-    return false;
-}
-
 bool SerialPort::openPort()
 {
-    if(!m_is_port_found)
-    {
-        qDebug("None ports to open.Please find port first.");
-        return false;
-    }
-
     if(this->isOpen())
     {
         quint8 retry_times = 5;
@@ -126,12 +69,6 @@ bool SerialPort::openPort()
 
 void SerialPort::closePort()
 {
-    if(!m_is_port_found)
-    {
-        qDebug("None ports to close.");
-        return;
-    }
-
     if(!this->isOpen())
     {
         qDebug("Port had been closed.");
@@ -144,12 +81,6 @@ void SerialPort::closePort()
 
 qint64 SerialPort::readPort(QByteArray &buffer)
 {
-    if(!m_is_port_found)
-    {
-        qDebug("None ports to read.");
-        return -1;
-    }
-
     if(!this->isOpen())
     {
         qDebug("Failed to read, because port is closed.");
@@ -166,14 +97,8 @@ qint64 SerialPort::readPort(QByteArray &buffer)
     return buffer.count();
 }
 
-qint64 SerialPort::writePort(QByteArray &buffer)
+qint64 SerialPort::writePort(const QByteArray &buffer)
 {
-    if(!m_is_port_found)
-    {
-        qDebug("None ports to write.");
-        return -1;
-    }
-
     if(!this->isOpen())
     {
         qDebug("Failed to read, because port is closed.");
@@ -185,4 +110,38 @@ qint64 SerialPort::writePort(QByteArray &buffer)
     qDebug() << "Send bytes:" << buffer;
 
     return send_counts;
+}
+
+QList<PortInfoStru> SerialPort::findPortsList()
+{
+    QList<PortInfoStru> ports_name_list;
+
+    const auto list = QSerialPortInfo::availablePorts();
+    if(!list.isEmpty())
+    {
+        for(auto &info : list)
+        {
+            PortInfoStru port_info_stru;
+
+            port_info_stru.name = info.portName();
+            port_info_stru.system_location = info.systemLocation();
+            port_info_stru.description = info.description();
+            port_info_stru.manufacturer = info.manufacturer();
+            port_info_stru.serial_number = info.serialNumber();
+
+            if(info.hasVendorIdentifier())
+            {
+                port_info_stru.vendor_identifier = info.vendorIdentifier();
+            }
+
+            if(info.hasProductIdentifier())
+            {
+                port_info_stru.product_identifier = info.productIdentifier();
+            }
+
+            ports_name_list.append(port_info_stru);
+        }
+    }
+
+    return ports_name_list;
 }

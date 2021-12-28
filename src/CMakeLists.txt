@@ -1,6 +1,8 @@
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
+
+    lib/communication/serial/q_serial
 )
 
 add_subdirectory(lib)

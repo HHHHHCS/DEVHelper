@@ -1,64 +1,55 @@
 #pragma once
 
-#include <QList>
-#include <QMutex>
 #include <QObject>
 
 #include "manager_collection.h"
-#include "link_interface/link.h"
+#include "serial_link.h"
 
+
+namespace dev_helper { namespace app { class DevHelperApplication; } }
 
 namespace managers
 {
-namespace dev_helper
-{
-namespace app
-{
-    class DevHelperApplication;
-}
-}
     class LinkManager : public Manager
     {
         Q_OBJECT
 
-        Q_SIGNALS:
-        //     void portStringsChanged();
-        //     void portsChanged();
+        signals:
 
-        private Q_SLOTS:
-        //     void linkDisconnected();
+        private slots:
+            // void linkDisconnected();
 
         public:
-        //     Q_PROPERTY(QStringList          linkTypeStrings         READ getLinkTypeStrings        CONSTANT)
-        //     Q_PROPERTY(QStringList          serialBaudRates         READ getSerialBaudrates        CONSTANT)
-        //     Q_PROPERTY(QStringList          serialPortStrings       READ getSerialPortStrings      NOTIFY portStringsChanged)
-        //     Q_PROPERTY(QStringList          serialPorts             READ getSerialPorts            NOTIFY portsChanged)
+            Q_PROPERTY(QStringList port_name_list       READ getPortNameList    CONSTANT);
+            Q_PROPERTY(QString     choice_port_name     READ getChoicePortName  WRITE setChoicePortName);
+            // Q_PROPERTY(QStringList          linkTypeStrings         READ getLinkTypeStrings        CONSTANT)
 
-        //     Q_INVOKABLE void createConnectedLink(communication::LinkConfiguration* cfg);
-        //     Q_INVOKABLE void shutdown();
+            // Q_INVOKABLE void createConnectedLink(communication::LinkConfiguration* cfg);
+            // Q_INVOKABLE void shutdown();
 
         public:
             LinkManager(QApplication *app, ManagerCollection* man_collect);
             ~LinkManager();
 
-        //     QList<communication::SharedLinkPtr> getLinksList() { return m_links_list; }
-        //     QStringList getLinkTypeStrings() const;
-        //     QStringList getSerialBaudrates();
-        //     QStringList getSerialPortStrings();
-        //     QStringList getSerialPorts();
+            void setChoicePortName(const QString name) { m_choice_port_name = name; }
+            // void setConnectionsSuspended(QString reason);
+            // void setConnectionsAllowed() { m_connections_suspended = false; }
 
-            int foundLinksList();
+            QStringList getPortNameList() const { return m_port_name_list; }
+            QString getChoicePortName() const { return m_choice_port_name; }
+            // QStringList getLinkTypeStrings() const;
 
-        //     void setConnectionsSuspended(QString reason);
-        //     void setConnectionsAllowed() { m_connections_suspended = false; }
-
-        //     bool createConnectedLink(communication::SharedLinkConfigurationPtr& cfg);
-        //     void disconnectAll();
+            void createScanLinksListWork();
+            // bool createConnectedLink(communication::SharedLinkConfigurationPtr& cfg);
+            // void disconnectAll();
 
         private:
-        //     QList<communication::SharedLinkPtr> m_links_list;
+            QStringList m_port_name_list;   // 可连接端口名列表
+            QString m_choice_port_name;     // 选择的连接端口名
 
-        //     bool m_connections_suspended;
+            QList<communication::SharedLinkPtr> m_links_list;   // 选择的连接端口指针对象
+
+            // bool m_connections_suspended;
 
     };
 }   // namespace managers

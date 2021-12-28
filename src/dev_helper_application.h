@@ -7,11 +7,12 @@
 #include "manager_collection.h"
 
 
+namespace managers { class ManagerCollection; }
+
 namespace dev_helper
 {
 namespace app
 {
-    class ::managers::ManagerCollection;
     class DevHelperApplication : public QApplication
     {
         Q_OBJECT

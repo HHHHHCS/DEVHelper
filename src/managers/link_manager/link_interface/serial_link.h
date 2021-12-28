@@ -1,52 +1,56 @@
 #pragma once
 
-#include <atomic>
-
 #include <QStringList>
 
+#include "q_serial.h"
 #include "link.h"
 
 
 namespace communication
 {
-    class SerialPort;
     class SerialLink : public Link
     {
         Q_OBJECT
 
+        // public signals:
+
+        // public slots:
+        //     void linkError();
+
+        private slots:
+            void writeBytes(const QByteArray &data) override;
+            void readBytes(QByteArray& data);
+
         public:
-            Q_PROPERTY(bool        is_find_ports_list   READ getFindPortsListFlag)
-            Q_PROPERTY(QStringList port_name_list       READ getPortNameList);
+            Q_PROPERTY(qint32       baudrate             READ getBaudrate            CONSTANT);
+            Q_PROPERTY(qint8        databits             READ getDatabits            CONSTANT);
+            Q_PROPERTY(qint8        stopbits             READ getStopbits            CONSTANT);
+            Q_PROPERTY(qint8        parity               READ getParity              CONSTANT);
 
             Q_INVOKABLE void disconnect() override;
-
-        public Q_SLOTS:
-            void linkError()
-
-        private Q_SLOTS:
-            void writeBytes(const QByteArray &data) override;
-            void readBytes(const QByteArray& data);
 
         public:
             SerialLink();
             ~SerialLink();
 
-            bool getConnected() const override { return (m_port ? m_port->isOpen() : false); }
-            bool getFindPortsListFlag() const override { return m_is_find_ports_list.load(); }
-            QStringList getPortNameList() const override { return m_port_name_list; }
+            void setPortName(const QString name) { if(m_port) { m_port->setPortName(name); } }
 
-            void disconnect() override;
+            qint32 getBaudrate() const { return (m_port ? m_port->baudRate() : 0); }
+            port_lib::SerialPort::QDataBits getDatabits() const { return (m_port ? m_port->dataBits() : port_lib::SerialPort::QDataBits::UnknownDataBits); }
+            port_lib::SerialPort::QStopBits getStopbits() const { return (m_port ? m_port->stopBits() : port_lib::SerialPort::QStopBits::UnknownStopBits); }
+            port_lib::SerialPort::QParity getParity() const { return (m_port ? m_port->parity() : port_lib::SerialPort::QParity::UnknownParity); }
+
+            bool getConnected() const override { return (m_port ? m_port->isOpen() : false); }
+
+            static QList<port_lib::PortInfoStru> findPortsListForward();
 
         protected:
             void connectionRemoved();
 
         private:
-            SerialPort *m_port;
-
-            std::atomic_bool m_is_find_ports_list;  // 找到可连接端口的标志
-
-            QStringList m_port_name_list;   // 可连接端口名列表
+            QThread *m_thread;
+            port_lib::SerialPort *m_port;
 
             bool connect() override;
-    }
+    };
 }   // namespace communication
