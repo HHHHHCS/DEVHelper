@@ -8,12 +8,15 @@
 #include <QQmlApplicationEngine>
 
 
+namespace managers { class LinkManager; }
+
 namespace communication
 {
-    class LinkManager;
     class Link : public QThread
     {
-        friend class LinkManager;
+        Q_OBJECT
+
+        friend class managers::LinkManager;
 
         signals:
             void connected();

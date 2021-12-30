@@ -5,11 +5,12 @@
 
 using namespace port_lib;
 
-SerialPort::SerialPort(qint32 baud_rate,
-                        QDataBits data_bits,
-                        QParity parity,
-                        QStopBits stop_bits,
-                        QFlowControl flow_control)
+SerialPort::SerialPort(const QString &port_name,
+                        qint32 baud_rate /* = 115200 */,
+                        QDataBits data_bits /* = QDataBits::Data8 */,
+                        QParity parity /* = QParity::NoParity */,
+                        QStopBits stop_bits /* = QStopBits::OneStop */,
+                        QFlowControl flow_control /* = QFlowControl::NoFlowControl */)
     : QSerialPort()
 {
     if(baud_rate < 0)
@@ -18,6 +19,7 @@ SerialPort::SerialPort(qint32 baud_rate,
         return;
     }
 
+    this->setPortName(port_name);
     this->setBaudRate(baud_rate);
     this->setDataBits(data_bits);
     this->setParity(parity);
@@ -31,7 +33,7 @@ SerialPort::SerialPort(const QString &port_name)
     this->setPortName(port_name);
 }
 
-SerialPort::SerialPort(const QString &port_name, qint32 baud_rate)
+SerialPort::SerialPort(const QString &port_name, qint32 baud_rate /* = 115200  */)
     : QSerialPort()
 {
     this->setPortName(port_name);

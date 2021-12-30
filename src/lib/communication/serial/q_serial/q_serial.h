@@ -44,13 +44,14 @@ namespace port_lib
 
         public:
             explicit SerialPort() = default;
-            SerialPort(qint32 baud_rate,
-                        QDataBits data_bits,
-                        QParity parity,
-                        QStopBits stop_bits,
-                        QFlowControl flow_control);
-            SerialPort(const QString &port_name);
-            SerialPort(const QString &port_name, qint32 baud_rate);
+            explicit SerialPort(const QString &port_name,
+                                qint32 baud_rate = 115200,
+                                QDataBits data_bits = QDataBits::Data8,
+                                QParity parity = QParity::NoParity,
+                                QStopBits stop_bits = QStopBits::OneStop,
+                                QFlowControl flow_control = QFlowControl::NoFlowControl);
+            explicit SerialPort(const QString &port_name, qint32 baud_rate = 115200);
+            explicit SerialPort(const QString &port_name);
             ~SerialPort();
 
             bool openPort();
