@@ -41,6 +41,10 @@ namespace managers
             virtual ~Manager();
 
         protected:
+            QApplication* app() const { return m_app; }
+            ManagerCollection* man_collect() const { return m_man_collect; }
+
+        private:
             QApplication *m_app;
             ManagerCollection *m_man_collect;
     };

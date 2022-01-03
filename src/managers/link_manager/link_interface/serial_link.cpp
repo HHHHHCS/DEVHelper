@@ -21,22 +21,17 @@ SerialLink::SerialLink(const QString &port_name,
                             (SerialPort::QFlowControl)flow_control);
     Q_CHECK_PTR(m_port);
 
-    // TODO(huangchsh): 信号与槽连接
-    // TODO(huangchsh): 建立收发线程处理信号与槽
-    QThread* m_thread = new QThread(this);
-    this->moveToThread(m_thread);
+    QObject::connect(m_port, static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error), this, &SerialLink::linkError);
+    QObject::connect(m_port, &QIODevice::readyRead, this, &SerialLink::readBytes);
 }
 
 SerialLink::~SerialLink()
 {
-    if(!getConnected())
+    if(getConnected())
     {
-        m_port = nullptr;
+        disconnect();
     }
 
-    disconnect();
-
-    m_thread = nullptr;
     m_port = nullptr;
 }
 
@@ -47,17 +42,21 @@ void SerialLink::writeBytes(const QByteArray &data)
         return;
     }
 
+    emit bytesSent(this, data);
     m_port->writePort(data);
 }
 
-void SerialLink::readBytes(QByteArray &data)
+void SerialLink::readBytes()
 {
     if(!m_port)
     {
         return;
     }
 
+    QByteArray data;
     m_port->readPort(data);
+
+    emit bytesReceived(this, data);
 }
 
 bool SerialLink::connect()
@@ -73,6 +72,8 @@ bool SerialLink::connect()
         return true;
     }
 
+    emit connected();
+
     return false;
 }
 
@@ -84,6 +85,30 @@ void SerialLink::disconnect()
     }
 
     m_port->closePort();
+
+    emit disconnected();
+}
+
+void SerialLink::linkError(SerialPort::QSerialPortError error)
+{
+    switch (error)
+    {
+        case QSerialPort::NoError:
+        {
+            break;
+        }
+        case QSerialPort::ResourceError:
+        {
+            disconnect();
+            break;
+        }
+        default:
+        {
+            // 用于调试，观察错误
+            qDebug() << "SerialLink::linkError" << error;
+            break;
+        }
+    }
 }
 
 QList<port_lib::PortInfoStru> SerialLink::findPortsListForward()

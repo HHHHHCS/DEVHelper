@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include <QStringList>
 #include <QMutexLocker>
 #include <QSerialPort>

@@ -23,7 +23,7 @@ QQmlApplicationEngine* MainManager::createQMLAppEngine(QObject *parent /* = null
     return p_qml_app_engine;
 }
 
-void MainManager::createMainWindow(QQmlApplicationEngine *qml_engine /* = nullptr */)
+void MainManager::createMainWindow(QQmlApplicationEngine *qml_engine)
 {
     Q_CHECK_PTR(qml_engine);
     qml_engine->load(QUrl(QStringLiteral("qrc:/QML/main.qml")));

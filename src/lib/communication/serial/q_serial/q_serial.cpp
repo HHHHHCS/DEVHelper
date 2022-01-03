@@ -119,7 +119,7 @@ QList<PortInfoStru> SerialPort::findPortsList()
     QList<PortInfoStru> ports_name_list;
 
     const auto list = QSerialPortInfo::availablePorts();
-    if(!list.isEmpty())
+    if(!list.empty())
     {
         for(auto &info : list)
         {

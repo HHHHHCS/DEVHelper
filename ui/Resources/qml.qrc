@@ -1,10 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>../QML/main.qml</file>
-        <file>../QML/DeviceSelectInterface.qml</file>
-        <file>../QML/RCXHelperInterface.qml</file>
-        <file>../QML/UAVHelperInterface.qml</file>
-        <file>../QML/BAHelperInterface.qml</file>
+        <file>../QML/ScanLinksListInterface.qml</file>
+        <file>../QML/DevHelperInterface.qml</file>
         <file>../QML/LoadingInterface.qml</file>
         <file>../QML/InterfacesList.qml</file>
     </qresource>

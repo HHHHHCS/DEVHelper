@@ -32,10 +32,12 @@ ManagerCollection::~ManagerCollection()
 Manager::Manager(QApplication *app, ManagerCollection *man_collect)
     : QObject(man_collect)
     , m_app(app)
-    , m_man_collect(man_collect) 
+    , m_man_collect(man_collect)
 {
 }
 
 Manager::~Manager()
 {
+    m_app = nullptr;
+    m_man_collect = nullptr;
 }

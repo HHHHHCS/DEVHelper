@@ -25,8 +25,7 @@ namespace app
             ::managers::ManagerCollection *man_collection() const { return m_p_man_collect; }
 
         public:
-            static DevHelperApplication* m_s_app_inst;
-
+            void initCommonType();
             bool bootMainWindow();
 
             void shutdown();
@@ -34,8 +33,8 @@ namespace app
         private:
             QQmlApplicationEngine *m_p_qml_app_engine;
             ::managers::ManagerCollection *m_p_man_collect;
-    };
 
-    DevHelperApplication* devHelperApp(void);
+            QObject* rootQmlObject();
+    };
 }   // namespace app
 }   // namespace dev_helper

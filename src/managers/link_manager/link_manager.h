@@ -1,13 +1,14 @@
 #pragma once
 
+#include <thread>
+#include <atomic>
+
 #include <QObject>
 #include <QStringList>
 
 #include "manager_collection.h"
 #include "serial_link.h"
 
-
-namespace dev_helper { namespace app { class DevHelperApplication; } }
 
 namespace managers
 {
@@ -16,17 +17,28 @@ namespace managers
         Q_OBJECT
 
         signals:
+            void portNameList(const QStringList link_list);
 
         private slots:
             void linkDisconnected();
 
         public:
-            Q_PROPERTY(QStringList port_name_list       READ getPortNameList    CONSTANT);                  // 可连接端口列表
-            Q_PROPERTY(QString     choice_port_name     READ getChoicePortName  WRITE createChoiceLink);    // 选择连接的端口
-            // Q_PROPERTY(QStringList          linkTypeStrings         READ getLinkTypeStrings        CONSTANT)
+            Q_PROPERTY(QStringList portNameList       READ getPortNameList    CONSTANT);                  // 可连接端口列表
+            Q_PROPERTY(QString     choicePortName     READ getChoicePortName  WRITE createChoiceLink);    // 选择连接的端口
+            // Q_PROPERTY(QStringList          linkTypeStrings         READ getLinkTypeStrings        CONSTANT);    // 可连接端口类型列表
 
             // Q_INVOKABLE void createConnectedLink(communication::LinkConfiguration* cfg);
             // Q_INVOKABLE void shutdown();
+
+            enum class LinkType : int8_t
+            {
+                UNKNOWN_TYPE = -1,
+                CAN,
+                SERIAL,
+                TCP,
+                UDP,
+            };
+            Q_ENUM(LinkType);
 
         public:
             LinkManager(QApplication *app, ManagerCollection* man_collect);
@@ -39,6 +51,7 @@ namespace managers
             QString getChoicePortName() const { return m_choice_port_name; }
             int getLinkNum() const { return m_links_list.count(); }
             // QStringList getLinkTypeStrings() const;
+            communication::SharedLinkPtr getSharedLinkPtrByPortName(const QString name);
 
             void createScanLinksListWork();
             void createChoiceLink(const QString name);
@@ -47,6 +60,9 @@ namespace managers
 
         private:
             static constexpr char *LINK_DEV_NAME_LIST[] = {"rc", "rn", "rp", "ba", "uav"};   // 可选设备列表
+
+            std::thread *m_p_serial_scan_thread;
+            std::atomic_bool m_serial_scan_thread_stop_flag;
 
             QStringList m_port_name_list;   // 可连接端口名列表
             QString m_choice_port_name;     // 选择的连接端口名

@@ -21,27 +21,13 @@ ApplicationWindow
 
         anchors.fill: parent
 
-        initialItem: DeviceSelectInterface {}
+        initialItem: ScanLinksListInterface {}
     }
 
     Component
     {
-        id: rcx_helper_interface
+        id: dev_helper_interface
 
-        RCXHelperInterface {}
-    }
-
-    Component
-    {
-        id: uav_helper_interface
-
-        UAVHelperInterface {}
-    }
-
-    Component
-    {
-        id: ba_helper_interface
-
-        BAHelperInterface {}
+        DevHelperInterface {}
     }
 }

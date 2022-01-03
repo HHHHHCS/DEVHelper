@@ -16,15 +16,15 @@ namespace managers
             MainManager(QApplication *app, ManagerCollection* man_collect);
             ~MainManager();
 
-            /** 
+            /**
              * @brief 创建QML应用引擎
              */
             QQmlApplicationEngine* createQMLAppEngine(QObject *parent = nullptr);
 
-            /** 
+            /**
              * @brief 创建QML初始窗口
              */
-            void createMainWindow(QQmlApplicationEngine *qml_engine = nullptr);
+            void createMainWindow(QQmlApplicationEngine *qml_engine);
 
             // TODO(hunagchsh): 增加Image Provider
 

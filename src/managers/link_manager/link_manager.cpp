@@ -1,6 +1,5 @@
-#include <thread>
 #include <memory>
-#include <future>
+#include <chrono>
 
 #include <QApplication>
 #include <QDebug>
@@ -13,26 +12,34 @@ using namespace managers;
 
 LinkManager::LinkManager(QApplication *app, ManagerCollection* man_collect)
     : Manager(app, man_collect)
+    , m_serial_scan_thread_stop_flag(false)
 {
-    // connect(this, )
 }
 
 LinkManager::~LinkManager()
 {
+    m_serial_scan_thread_stop_flag = true;
+    // 回收检测端口线程资源
+    if(m_p_serial_scan_thread->joinable())
+    {
+        m_p_serial_scan_thread->join();
+    }
+    m_p_serial_scan_thread = nullptr;
+
     disconnectAll();
 }
 
 void LinkManager::createScanLinksListWork()
 {
     // 1. 创建搜索可连接USB或串口端口的线程
-    std::thread find_links_list_thread([this]()
+    m_p_serial_scan_thread = new std::thread([this]()
     {
         QList<port_lib::PortInfoStru> ports_list;
-        while(1)
+        while(!m_serial_scan_thread_stop_flag)
         {
             ports_list.clear();
             ports_list = communication::SerialLink::findPortsListForward();
-            if(ports_list.isEmpty())
+            if(!ports_list.empty())
             {
                 for(auto &iter : ports_list)
                 {
@@ -45,22 +52,33 @@ void LinkManager::createScanLinksListWork()
                     }
                 }
 
-                // TODO(huangchsh): 发出列表信号
+                // TODO(huangchsh): 需要对设备通过类型进行区分及显示
+                emit portNameList(m_port_name_list);
             }
+
+            std::this_thread::sleep_for(std::chrono::seconds(3));
         }
     });
-    find_links_list_thread.detach();
 
-    // TODO(huangchsh): 扫描网络端口列表
+    // TODO(huangchsh): 创建搜索可连接USB或串口端口的线程
 }
 
 void LinkManager::createChoiceLink(const QString name)
 {
+    // TODO(huangchsh): 暂时只先实现串口类型，其余类型后续添加
     communication::SharedLinkPtr p_create_link = std::make_shared<communication::SerialLink>(name, 921600);
 
-    p_create_link->connect();
+    // TODO(huangchsh): 通信错误信号
+    // connect(p_create_link->get(), &communication::Link::commError, , );
+    // TODO(huangchsh): 读取信号
+    // connect(p_create_link->get(), &communication::Link::bytesReceived, , );
+    // TODO(huangchsh): 写入信号
+    // connect(p_create_link->get(), &communication::Link::bytesSent, , );
+    connect(p_create_link.get(), &communication::Link::disconnected, this, &LinkManager::linkDisconnected);
 
     m_links_list.append(p_create_link);
+
+    p_create_link->connect();
 }
 
 void LinkManager::disconnectAll()
@@ -69,8 +87,6 @@ void LinkManager::disconnectAll()
 
     for(const auto &link : lins_ptr_list)
     {
-        // TODO(huangchsh): 信号与槽断连
-
         link->disconnect();
     }
 }
@@ -84,7 +100,13 @@ void LinkManager::linkDisconnected()
         return;
     }
 
-    // TODO(huangchsh): 信号与槽断连
+    // TODO(huangchsh): 断连通信错误信号
+    // disconnect(link, &communication::Link::commError, , );
+    // TODO(huangchsh): 断连读取信号
+    // disconnect(link, &communication::Link::bytesReceived, , );
+    // TODO(huangchsh): 断连写入信号
+    // disconnect(link, &communication::Link::bytesSent, , );
+    disconnect(link, &communication::Link::disconnected, this, &LinkManager::linkDisconnected);
 
     for(int i = 0; i < m_links_list.count(); ++i)
     {
@@ -95,6 +117,20 @@ void LinkManager::linkDisconnected()
             return;
         }
     }
+}
+
+communication::SharedLinkPtr LinkManager::getSharedLinkPtrByPortName(const QString name)
+{
+    for (int i = 0; i< m_links_list.count(); i++)
+    {
+        communication::SharedLinkPtr link = m_links_list[i];
+        if (link.get()->getPortName() == name)
+        {
+            return link;
+        }
+    }
+
+    return communication::SharedLinkPtr(nullptr);
 }
 
 bool LinkManager::isBelong2LinksList(communication::Link* link)

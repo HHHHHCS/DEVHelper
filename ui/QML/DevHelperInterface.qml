@@ -9,39 +9,9 @@ import QtGraphicalEffects 1.0
 
 Item
 {
-    id: rcx_helper_interface
+    id: dev_helper_interface
 
     clip: true
-    
-    Label
-    {
-        id: waiting_view
-
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        text: qsTr("等待设备接入...")
-        
-        font.pixelSize: 30
-    }
-
-    Button     // NOTE(huangchsh): 测试代码，暂存
-    {
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        background: Rectangle
-        {
-            color: "transparent"
-        }
-
-        onClicked: 
-        {
-            visible = false
-            waiting_view.visible = false
-            interface_view.visible = true
-        }
-    }
 
     FileDialog
     {
@@ -91,7 +61,7 @@ Item
 
         anchors.fill: parent
 
-        visible: false
+        visible: true
 
         header: ToolBar
         {

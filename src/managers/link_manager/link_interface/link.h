@@ -21,10 +21,9 @@ namespace communication
         signals:
             void connected();
             void disconnected();
-            void bytesReceived(Link *link, QByteArray &data);
-            void bytesSend(Link *link, QByteArray &data);
-
-            void commError(const QString &title, const QString &error);
+            void bytesReceived(Link*, QByteArray&);
+            void bytesSent(Link*, const QByteArray&);
+            void commError(const QString&, const QString&);
 
         private slots:
             virtual void writeBytes(const QByteArray&) = 0;
@@ -35,6 +34,8 @@ namespace communication
         public:
             virtual ~Link() {};
 
+            virtual void setPortName(const QString name) = 0;
+            virtual QString getPortName() const = 0;
             virtual bool getConnected() const = 0;
 
         protected:
