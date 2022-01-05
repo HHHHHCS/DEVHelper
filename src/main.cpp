@@ -15,6 +15,8 @@ int main(int argc, char *argv[])
     DevHelperApplication *p_app= new DevHelperApplication(argc, argv);
     Q_CHECK_PTR(p_app);
 
+    p_app->initCommonType();
+
     if(!p_app->bootMainWindow())
     {
         return -1;

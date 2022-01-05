@@ -1,7 +1,7 @@
 import QtQuick 2.7
 
 
-QtObject 
+QtObject
 {
     id: root
 
@@ -12,7 +12,7 @@ QtObject
         asynchronous: true
         source: "qrc:/QML/InterfacesList.qml"
         active: false
-        onLoaded: 
+        onLoaded:
         {
             $loading_view.close()
         }

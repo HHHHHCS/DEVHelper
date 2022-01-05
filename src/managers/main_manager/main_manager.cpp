@@ -1,3 +1,6 @@
+#include <QQmlContext>
+
+#include "link_manager.h"
 #include "main_manager.h"
 
 
@@ -18,7 +21,8 @@ QQmlApplicationEngine* MainManager::createQMLAppEngine(QObject *parent /* = null
     QQmlApplicationEngine *p_qml_app_engine = new QQmlApplicationEngine(parent);
 
     p_qml_app_engine->addImportPath("qrc:/QML");
-    // TODO(huangchsh): 设置根对象属性
+    // 设置根对象属性，用于UI交互
+    p_qml_app_engine->rootContext()->setContextProperty("link_manager", man_collect()->link_man());
 
     return p_qml_app_engine;
 }

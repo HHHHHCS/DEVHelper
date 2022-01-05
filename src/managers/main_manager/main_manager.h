@@ -31,6 +31,5 @@ namespace managers
         private:
 
     };
-
     // TODO(huangchsh): 实现总控件属性控制类
 }   // namespace managers
