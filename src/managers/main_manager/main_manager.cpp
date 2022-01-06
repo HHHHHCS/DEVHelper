@@ -22,7 +22,7 @@ QQmlApplicationEngine* MainManager::createQMLAppEngine(QObject *parent /* = null
 
     p_qml_app_engine->addImportPath("qrc:/QML");
     // 设置根对象属性，用于UI交互
-    p_qml_app_engine->rootContext()->setContextProperty("link_manager", man_collect()->link_man());
+    p_qml_app_engine->rootContext()->setContextProperty("link_manager_obj", man_collect()->link_man());
 
     return p_qml_app_engine;
 }

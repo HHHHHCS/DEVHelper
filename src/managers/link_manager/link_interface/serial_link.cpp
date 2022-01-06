@@ -12,7 +12,7 @@ SerialLink::SerialLink(const QString &port_name,
                         qint8 parity /* = 0 */,
                         qint8 stop_bits /* = 1 */,
                         qint8 flow_control /* = 0 */)
-    : Link()
+    : Link(LinkType::SERIAL)
 {
     m_port = new SerialPort(port_name, baud_rate,
                             (SerialPort::QDataBits)data_bits,

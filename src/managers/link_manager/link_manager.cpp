@@ -34,26 +34,32 @@ void LinkManager::createScanLinksListWork()
     // 1. 创建搜索可连接USB或串口端口的线程
     m_p_serial_scan_thread = new std::thread([this]()
     {
-        QList<port_lib::PortInfoStru> ports_list;
+        QList<port_lib::PortInfoStru> links_list;
         while(!m_serial_scan_thread_stop_flag)
         {
-            ports_list.clear();
-            ports_list = communication::SerialLink::findPortsListForward();
-            if(!ports_list.empty())
+            links_list.clear();
+            links_list = communication::SerialLink::findPortsListForward();
+            if(!links_list.isEmpty())
             {
-                for(auto &iter : ports_list)
+                for(auto &iter : links_list)
                 {
-                    for(auto link_dev_name : LINK_DEV_NAME_LIST)
-                    {
-                        if(iter.description.toLower().contains(link_dev_name))
-                        {
-                            m_port_name_list.append(link_dev_name);
-                        }
-                    }
+                    // for(auto link_dev_name : LINK_DEV_NAME_LIST)
+                    // {
+                    //     if(iter.description.toLower().contains(iter.name))
+                    //     {
+                    //         m_port_name_list.append(iter.name);
+                    //     }
+                    // }
+
+                    m_link_info_map.insert(iter.name, iter.description);
                 }
 
                 // TODO(huangchsh): 需要对设备通过类型进行区分及显示
-                emit portNameList(m_port_name_list);
+                if(!m_link_info_map.isEmpty())
+                {
+                    emit linkInfoMap(m_link_info_map);
+                    m_link_info_map.clear();
+                }
             }
 
             std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -79,6 +85,8 @@ void LinkManager::createChoiceLink(const QString name)
     m_links_list.append(p_create_link);
 
     p_create_link->connect();
+
+    emit linkAdded();
 }
 
 void LinkManager::disconnectAll()
@@ -119,7 +127,7 @@ void LinkManager::linkDisconnected()
     }
 }
 
-communication::SharedLinkPtr LinkManager::getSharedLinkPtrByPortName(const QString name)
+communication::SharedLinkPtr LinkManager::getSharedLinkPtrByLinkName(const QString name)
 {
     for (int i = 0; i< m_links_list.count(); i++)
     {

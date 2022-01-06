@@ -6,8 +6,6 @@ import QtQuick.Layouts 1.2
 import QtQuick.Dialogs 1.2
 import QtGraphicalEffects 1.0
 
-import Managers.LinkManager 1.0
-
 
 Item
 {
@@ -15,9 +13,35 @@ Item
 
     anchors.fill: parent
 
-    LinkManager
+    Connections
     {
-        id: link_manager
+        target: link_manager_obj
+
+        onLinkInfoMap:
+        {
+            waiting_view_label.visible = false
+            // choose_link_label.visible = true
+            link_listview.visible = true
+
+            // 刷新可用连接列表
+            if(link_listview_model.count)
+            {
+                link_listview_model.clear()
+            }
+
+            for(var elem in link_info_list)
+            {
+                link_listview_model.append({"name" : elem, "description" : link_info_list[elem]});
+            }
+        }
+
+        onLinkAdded:
+        {
+            // TODO(huangchsh): 增加连接即增加窗口选项卡
+
+            // NOTE(huangchsh): 测试代码，创建连接成功后切换页面
+            page_view_stack.push(dev_helper_interface)
+        }
     }
 
     Label
@@ -32,39 +56,75 @@ Item
         font.pixelSize: 30
     }
 
-    ListView
+    Label
     {
-        id: link_list_view
-
-        clip: true
+        id: choose_link_label
 
         visible: false
+
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        text: qsTr("请选择设备连接~")
+
+        font.pixelSize: 20
+    }
+
+    ListView
+    {
+        id: link_listview
+
         anchors.verticalCenter: parent.verticalCenter
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width * 0.7; height: parent.height * 0.7
 
-        model: link_list_view_model
-        delegate: list_elem_delegate
+        visible: false
+        clip: true
+        focus: true
 
-        ListModel
+        spacing: 5
+
+        highlightFollowsCurrentItem: true
+        highlight: Component
         {
-            id: link_list_view_model
+            Rectangle
+            {
+                y: link_listview.currentItem.y
+                width: 180; height: 20
+                color: "lightsteelblue"; radius: 5
+
+                Behavior on y
+                {
+                    SpringAnimation
+                    {
+                        spring: 3
+                        damping: 0.2
+                    }
+                }
+            }
         }
 
-        Component
+        model: ListModel
         {
-            id: list_elem_delegate
+            id: link_listview_model
+        }
+        delegate: Component
+        {
+            id: link_listview_delegate
 
             Rectangle
             {
-                id: list_item
-                visible: true
+                id: link_listview_delegate_item
+
                 width: parent.width; height: 20
+
+                visible: true
+
+                color: "transparent"
 
                 Text
                 {
                     text: name + ":" + description
-                    font.pixelSize: parent.height - 5
+                    font.pixelSize: 15
                 }
 
                 Image
@@ -79,51 +139,27 @@ Item
                     anchors.fill: parent
                     hoverEnabled: true
 
+                    // 悬停光标于选项时高亮
                     onEntered:
                     {
-                        if(is_current_item)
-                        {
-                            // TODO(huangchsh): 选项高亮
-                        }
+                        link_listview.currentIndex = index
                     }
 
-                    onExited:
-                    {
-                        if(is_current_item)
-                        {
-                            // TODO(huangchsh): 取消选项高亮
-                        }
-                    }
-
+                    // 单击选定选项并展开选项详细信息
                     onClicked:
                     {
-                        if(is_current_item)
-                        {
-                            // TODO(huangchsh): 发送选中信号
-                        }
+                        link_listview.currentIndex = index
+                        // TODO(huangchsh): 展开连接选项，显示连接详细信息
+                    }
+
+                    // 双击选定选项并创建
+                    onDoubleClicked:
+                    {
+                        link_listview.currentIndex = index
+                        link_manager_obj.createChoiceLink(name)
                     }
                 }
             }
-        }
-    }
-
-    Button     // NOTE(huangchsh): 测试代码，暂存
-    {
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        background: Rectangle
-        {
-            color: "transparent"
-        }
-
-        onClicked:
-        {
-            visible = false
-            waiting_view_label.visible = false
-            link_list_view.visible = true
-
-            // page_view_stack.push(dev_helper_interface)
         }
     }
 }

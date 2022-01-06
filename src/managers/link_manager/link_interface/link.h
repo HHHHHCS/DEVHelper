@@ -38,15 +38,29 @@ namespace communication
             virtual QString getPortName() const = 0;
             virtual bool getConnected() const = 0;
 
+            enum class LinkType : int8_t
+            {
+                UNKNOWN_TYPE = -1,
+                CAN,
+                SERIAL,
+                TCP,
+                UDP,
+            };
+
         protected:
-            Link()
+            Link(LinkType link_type)
                 : QThread(nullptr)
+                , m_link_type(link_type)
             {
                 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
                 qRegisterMetaType<Link*>("communication::Link");
             }
 
+            LinkType getLinkType() const { return m_link_type; }
+
         private:
+            LinkType m_link_type;
+
             virtual bool connect() = 0;
     };
     using SharedLinkPtr = std::shared_ptr<Link>;
