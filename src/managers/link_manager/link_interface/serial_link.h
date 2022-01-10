@@ -12,8 +12,6 @@ namespace communication
     {
         Q_OBJECT
 
-        // public signals:
-
         public slots:
             void linkError(port_lib::SerialPort::QSerialPortError error);
 

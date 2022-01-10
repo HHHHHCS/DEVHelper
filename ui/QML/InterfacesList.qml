@@ -1,5 +1,7 @@
 import QtQuick 2.7
 import QtQuick.Window 2.3
+import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
 import QtQuick.Controls 2.2
 
 
@@ -14,20 +16,43 @@ ApplicationWindow
 
     Component.onCompleted: show()
 
-    // 静态栈加载界面
-    StackView
+    // 使用选项卡方式加载切换界面
+    TabView
     {
-        id: page_view_stack
+        id: page_tab_view
 
         anchors.fill: parent
 
-        initialItem: ScanLinksListInterface {}
-    }
+        Tab
+        {
+            active: true
+            asynchronous: true
 
-    Component
-    {
-        id: dev_helper_interface
+            title: qsTr("可选连接列表")
+        }
 
-        DevHelperInterface {}
+        style: TabViewStyle
+        {
+            tabsMovable: true
+
+            frameOverlap: 1
+            tab: Rectangle
+            {
+                color: "transparent"
+                border.color:  "black"
+                implicitWidth: Math.max(text.width + 4, 80)
+                implicitHeight: 20
+                radius: 5
+                Text
+                {
+                    id: text
+                    anchors.centerIn: parent
+                    text: styleData.title
+                    color: "black"
+                    font.bold: styleData.selected
+                }
+            }
+            frame: ScanLinksListInterface {}
+        }
     }
 }

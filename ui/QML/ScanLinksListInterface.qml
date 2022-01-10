@@ -37,11 +37,13 @@ Item
 
         onLinkAdded:
         {
-            // TODO(huangchsh): 增加连接即增加窗口选项卡
-
-            // NOTE(huangchsh): 测试代码，创建连接成功后切换页面
-            page_view_stack.push(dev_helper_interface)
+            // 增加连接即增加窗口选项卡
+            var tab_name = link_listview_model.get(link_listview.currentIndex).name + ":" + link_listview_model.get(link_listview.currentIndex).description
+            page_tab_view.addTab(tab_name, Qt.createComponent("DevHelperInterface.qml"))
         }
+
+        // TODO(huangchsh): 提供删除机制
+        // TODO(huangchsh): 提供状态改变机制
     }
 
     Label
@@ -90,7 +92,8 @@ Item
             {
                 y: link_listview.currentItem.y
                 width: 180; height: 20
-                color: "lightsteelblue"; radius: 5
+                radius: 5
+                color: "lightsteelblue";
 
                 Behavior on y
                 {

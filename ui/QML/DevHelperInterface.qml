@@ -71,96 +71,55 @@ Item
                 color: "transparent"
             }
 
-            ColumnLayout
+            ProgressBar
             {
-                anchors.fill: parent
+                id: control
 
-                Layout.minimumWidth: width
-                Layout.minimumHeight: height
+                width: parent.width * 0.95; height: 5
 
-                RowLayout
+                from: 0.0
+                to: 1.0
+
+                background: Rectangle
                 {
-                    ToolButton
+                    implicitWidth: control.width; implicitHeight: control.height
+                }
+
+                contentItem: Rectangle
+                {
+                    width: control.visualPosition * control.width; height: control.height
+                    radius: 10
+                    LinearGradient
                     {
-                        text: qsTr("<")
-                        onClicked:
+                        anchors.fill: parent
+                        end: Qt.point(width, 0)      // 横向渐变
+                        gradient: Gradient
                         {
-                            page_view_stack.pop();
-                        }
-                    }
-
-                    Label
-                    {
-                        Layout.fillWidth: true
-
-                        horizontalAlignment: Qt.AlignHCenter
-                        verticalAlignment: Qt.AlignVCenter
-
-                        text: qsTr("RCX 设备助手")
-                        font.pixelSize: 20
-                    }
-
-                    ToolButton
-                    {
-                        text: qsTr("···")
-                        onClicked:
-                        {
-                            menu.open()
+                            GradientStop {  position: 0.0;    color: "lightGreen" }
+                            GradientStop {  position: 1.0;    color: "Orange" }
                         }
                     }
                 }
 
-                ProgressBar
+                Timer
                 {
-                    id: control
-
-                    width: parent.width * 0.95; height: 5
-
-                    from: 0.0
-                    to: 1.0
-
-                    background: Rectangle
+                    interval: 1000
+                    repeat: true
+                    running: true
+                    onTriggered:
                     {
-                        implicitWidth: control.width; implicitHeight: control.height
-                    }
-
-                    contentItem: Rectangle
-                    {
-                        width: control.visualPosition * control.width; height: control.height
-                        radius: 10
-                        LinearGradient
+                        if(parent.value < 1.0)
                         {
-                            anchors.fill: parent
-                            end: Qt.point(width, 0)      // 横向渐变
-                            gradient: Gradient
-                            {
-                                GradientStop {  position: 0.0;    color: "lightGreen" }
-                                GradientStop {  position: 1.0;    color: "Orange" }
-                            }
+                            parent.value += 0.2
                         }
-                    }
-
-                    Timer
-                    {
-                        interval: 1000
-                        repeat: true
-                        running: true
-                        onTriggered:
+                        else
                         {
-                            if(parent.value < 1.0)
-                            {
-                                parent.value += 0.2
-                            }
-                            else
-                            {
-                                stop()
-                                parent.value = 0.0
-                            }
+                            stop()
+                            parent.value = 0.0
                         }
                     }
                 }
             }
-
         }
 
         // TODO(huangchsh): 增加刷写固件或信息进度条
