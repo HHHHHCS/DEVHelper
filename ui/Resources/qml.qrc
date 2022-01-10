@@ -5,6 +5,7 @@
         <file>../QML/DevHelperInterface.qml</file>
         <file>../QML/LoadingInterface.qml</file>
         <file>../QML/InterfacesList.qml</file>
+        <file>../QML/ParametersScrollList.qml</file>
     </qresource>
     <qresource prefix="/">
         <file>../Images/xunyi.png</file>

@@ -13,6 +13,12 @@ Item
 
     anchors.fill: parent
 
+    // NOTE(huangchsh): 无连接UI调试代码
+    Component.onCompleted:
+    {
+        page_tab_view.addTab("TEST1", Qt.createComponent("DevHelperInterface.qml"))
+    }
+
     Connections
     {
         target: link_manager_obj
@@ -40,6 +46,7 @@ Item
             // 增加连接即增加窗口选项卡
             var tab_name = link_listview_model.get(link_listview.currentIndex).name + ":" + link_listview_model.get(link_listview.currentIndex).description
             page_tab_view.addTab(tab_name, Qt.createComponent("DevHelperInterface.qml"))
+            // TODO(huangchsh): 需要增加输入参数
         }
 
         // TODO(huangchsh): 提供删除机制

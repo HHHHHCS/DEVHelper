@@ -1,5 +1,4 @@
 import QtQuick 2.9
-import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.2
@@ -10,6 +9,8 @@ import QtGraphicalEffects 1.0
 Item
 {
     id: dev_helper_interface
+
+    width: parent.width; height: parent.height
 
     clip: true
 
@@ -59,7 +60,11 @@ Item
     {
         id: interface_view
 
-        anchors.fill: parent
+        // NOTE(huangchsh): 此处不用 anchors.fill: parent，原因为parent隐式宽高未确定
+        implicitWidth: parent.width
+        implicitHeight: parent.height
+        contentWidth: parent.width
+        contentHeight: parent.height
 
         visible: true
 
@@ -71,6 +76,7 @@ Item
                 color: "transparent"
             }
 
+            // TODO(huangchsh): 需要根据动作进度进行变化
             ProgressBar
             {
                 id: control
@@ -125,251 +131,92 @@ Item
         // TODO(huangchsh): 增加刷写固件或信息进度条
         // footer:
 
+        // 界面行布局
         RowLayout
         {
             anchors.fill: parent
 
             spacing: 5
 
-            ColumnLayout
+            // 参数信息列布局
+            Column
             {
-                id: information_column
+                id: parameters_scroll_list_column
 
+                Layout.alignment: Qt.AlignTop
                 Layout.leftMargin: 10.0
-                Layout.maximumWidth: parent.width * 0.85; Layout.maximumHeight: parent.height
-                Layout.minimumWidth: parent.width * 0.85; Layout.minimumHeight: parent.height * 0.5
-                spacing: 5
+                Layout.preferredWidth: parent.width * 0.85
+                Layout.fillHeight: true
 
-                Item
+                // TODO(huangchsh): 此处可改进为ListView
+
+                // 软件信息
+                ParametersScrollList
                 {
-                    id: software_info_item
+                    id: software_parameters_list
+                }
 
-                    Layout.preferredWidth: parent.width; Layout.preferredHeight: parent.height
-                    Layout.alignment: Qt.AlignHCenter
-
-                    Label
-                    {
-                        id: software_info_label
-
-                        padding: 5
-
-                        text: qsTr("软件信息")
-                        font.pixelSize: 15
-                    }
-
-                    ScrollView
-                    {
-                        id: software_info_scrollview
-
-                        anchors.top: software_info_label.bottom
-                        anchors.topMargin: 5
-                        anchors.left: parent.left
-                        width: parent.width; height: parent.height - (software_info_label.y + software_info_label.height)
-
-                        background: Rectangle
-                        {
-                            border.color: "lightGray"
-                            border.width: 0.5
-                        }
-
-                        clip: true
-
-                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
-
-                        ListView
-                        {
-                            anchors.top: software_info_scrollview.top
-                            anchors.topMargin: 5
-                            anchors.left: software_info_scrollview.left
-                            anchors.leftMargin: 5
-
-                            spacing: 5
-
-                            delegate: software_scroll_list_viem_component
-                            model: ListModel
-                            {
-                                ListElement { name: "固件版本：" }
-                                ListElement { name: "git 分支：" }
-                                ListElement { name: "git 标签：" }
-                            }
-
-                            Component
-                            {
-                                id: software_scroll_list_viem_component
-
-                                RowLayout
-                                {
-                                    spacing: 5
-
-                                    Text
-                                    {
-                                        padding: 5
-
-                                        text: qsTr(name)
-                                        elide: Text.ElideLeft
-                                        font.pixelSize: 15
-                                    }
-
-                                    TextField
-                                    {
-                                        width: 200;
-
-                                        clip: true
-                                        focus: true
-                                        autoScroll: false
-                                        hoverEnabled: true
-                                        selectByMouse: true
-                                        maximumLength: 25
-
-                                        // placeholderTextColor: "Black"
-
-                                        background: Rectangle
-                                        {
-                                            id: view_component_text_field
-
-                                            implicitWidth: 200
-                                            implicitHeight: 15
-                                            color: "transparent"
-                                            border.color: "Black"
-                                        }
-
-                                        font.pointSize: 10
-                                        // TODO(huangchsh): 设备连接后，获取设备信息，显示默认字符串
-
-                                        onTextEdited:
-                                        {
-                                            // TODO(huangchsh): 增加文本修改判断
-
-                                            if(length > 0)
-                                            {
-                                                save_button.enabled = true
-                                                cancel_button.enabled = true
-                                            }
-                                            else
-                                            {
-                                                save_button.enabled = false
-                                                cancel_button.enabled = false
-                                            }
-                                        }
-                                    }
-
-                                    Button
-                                    {
-                                        id: save_button
-
-                                        enabled: false
-
-                                        background: Rectangle
-                                        {
-                                            implicitWidth: 50
-                                            implicitHeight: 15
-                                            color: "transparent"
-                                            border.color: "Black"
-                                        }
-
-                                        text: qsTr("✔")
-
-                                        onClicked:
-                                        {
-                                            // TODO(huangchsh): 触发保存事件
-                                        }
-                                    }
-
-                                    Button
-                                    {
-                                        id: cancel_button
-
-                                        enabled: false
-
-                                        anchors.right: software_scroll_list_viem_component.right
-                                        anchors.rightMargin: 10
-
-                                        background: Rectangle
-                                        {
-                                            implicitWidth: 50
-                                            implicitHeight: 15
-                                            color: "transparent"
-                                            border.color: "Black"
-                                        }
-
-                                        text: qsTr("×")
-
-                                        onClicked:
-                                        {
-                                            // TODO(huangchsh): 触发取消事件，将参数复原
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                // 硬件信息
+                ParametersScrollList
+                {
+                    id: hardware_parameters_list
                 }
             }
 
-            ColumnLayout
+            // 功能按钮列布局
+            Column
             {
                 id: buttons_column
 
-                Layout.maximumWidth: parent.width - information_column.width; Layout.maximumHeight: parent.height
-                Layout.minimumWidth: Layout.maximumWidth; Layout.minimumHeight: Layout.maximumHeight
+                Layout.alignment: Qt.AlignTop
+                Layout.rightMargin: 10.0
+                Layout.fillHeight: true
 
                 spacing: 5
 
-                Column
+                Button
                 {
-                    id: buttons_item
+                    id: upload_button
 
-                    Layout.maximumWidth: parent.width; Layout.maximumHeight: parent.height
-                    Layout.alignment: Qt.AlignTop
-                    Layout.topMargin: 30.0
+                    text: qsTr("上传")
 
-                    spacing: 5
-
-                    Button
+                    onClicked:
                     {
-                        id: upload_button
-
-                        text: qsTr("上传")
-
-                        onClicked:
-                        {
-                            firmwareChoosenDialog.open()
-                        }
+                        firmwareChoosenDialog.open()
                     }
+                }
 
-                    Button
+                Button
+                {
+                    id: update_button
+
+                    text: qsTr("更新")
+                }
+
+                Button
+                {
+                    id: recover_factory_button
+
+                    text: qsTr("恢复出厂")
+
+                    onClicked:
                     {
-                        id: update_button
-
-                        text: qsTr("更新")
+                        recover_factory.open()
                     }
+                }
 
-                    Button
-                    {
-                        id: recover_factory_button
+                Button
+                {
+                    id: first_factory_button
 
-                        text: qsTr("恢复出厂")
+                    text: qsTr("初次出厂")
+                }
 
-                        onClicked:
-                        {
-                            recover_factory.open()
-                        }
-                    }
+                Button
+                {
+                    id: cloud_url_button
 
-                    Button
-                    {
-                        id: first_factory_button
-
-                        text: qsTr("初次出厂")
-                    }
-
-                    Button
-                    {
-                        id: cloud_url_button
-
-                        text: qsTr("云URL")
-                    }
+                    text: qsTr("云URL")
                 }
             }
         }
