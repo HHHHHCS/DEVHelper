@@ -51,6 +51,7 @@ void LinkManager::createScanLinksListWork()
                     //     }
                     // }
 
+                    // NOTE(huangchsh): 调试代码
                     m_link_info_map.insert(iter.name, iter.description);
                 }
 
@@ -84,9 +85,26 @@ void LinkManager::createChoiceLink(const QString name)
 
     m_links_list.append(p_create_link);
 
-    p_create_link->connect();
+    if(p_create_link->connect())
+    {
+        qDebug("%s connected", p_create_link->getPortName().toStdString().data());
 
-    emit linkAdded();
+        emit linkAdded();
+    }
+    else
+    {
+        qDebug("%s connect failed", p_create_link->getPortName().toStdString().data());
+    }
+}
+
+void LinkManager::removeChoiceLink(const QString name)
+{
+    communication::SharedLinkPtr p_link = getSharedLinkPtrByLinkName(name);
+    if(p_link.get())
+    {
+        p_link->disconnect();
+        qDebug("%s disconnected", p_link->getPortName().toStdString().data());
+    }
 }
 
 void LinkManager::disconnectAll()

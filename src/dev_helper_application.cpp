@@ -61,7 +61,7 @@ bool DevHelperApplication::bootMainWindow()
     }
 
     // 创建可用端口检测线程
-    // man_collection()->link_man()->createScanLinksListWork();
+    man_collection()->link_man()->createScanLinksListWork();
 
     return true;
 }

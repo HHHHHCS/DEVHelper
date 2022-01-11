@@ -13,20 +13,31 @@ Item
 
     anchors.fill: parent
 
-    // NOTE(huangchsh): 无连接UI调试代码
     Component.onCompleted:
     {
-        page_tab_view.addTab("TEST1", Qt.createComponent("DevHelperInterface.qml"))
+        // NOTE(huangchsh): 无连接UI调试代码
+        // page_tab_view.addTab("COM23:rc3 vcom", Qt.createComponent("DevHelperInterface.qml"))
+        // page_tab_view.addTab("COM26:rc3 vcom", Qt.createComponent("DevHelperInterface.qml"))
+        page_tab_view.sigCloseTab.connect(slotLinkRemove)
+
+        // 连接选项删除槽
+        function slotLinkRemove(tab_index, tab_name)
+        {
+            var link_name = tab_name.slice(0, tab_name.indexOf(":"))
+            link_manager_obj.removeChoiceLink(link_name)
+
+            page_tab_view.removeTab(tab_index)
+        }
     }
 
     Connections
     {
         target: link_manager_obj
 
+        // 可选连接列表信号槽
         onLinkInfoMap:
         {
             waiting_view_label.visible = false
-            // choose_link_label.visible = true
             link_listview.visible = true
 
             // 刷新可用连接列表
@@ -41,6 +52,7 @@ Item
             }
         }
 
+        // 选择连接添加信号槽
         onLinkAdded:
         {
             // 增加连接即增加窗口选项卡
@@ -49,7 +61,6 @@ Item
             // TODO(huangchsh): 需要增加输入参数
         }
 
-        // TODO(huangchsh): 提供删除机制
         // TODO(huangchsh): 提供状态改变机制
     }
 
@@ -63,19 +74,6 @@ Item
         text: qsTr("等待设备接入...")
 
         font.pixelSize: 30
-    }
-
-    Label
-    {
-        id: choose_link_label
-
-        visible: false
-
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        text: qsTr("请选择设备连接~")
-
-        font.pixelSize: 20
     }
 
     ListView
@@ -92,6 +90,7 @@ Item
 
         spacing: 5
 
+        // TODO(huangchsh): 高亮动画可优化
         highlightFollowsCurrentItem: true
         highlight: Component
         {
@@ -100,7 +99,7 @@ Item
                 y: link_listview.currentItem.y
                 width: 180; height: 20
                 radius: 5
-                color: "lightsteelblue";
+                color: "lightsteelblue"
 
                 Behavior on y
                 {
@@ -137,12 +136,12 @@ Item
                     font.pixelSize: 15
                 }
 
-                Image
-                {
-                    anchors.fill: parent
+                // TODO(huangchsh): 可考虑增加设备背景图片
+                // Image
+                // {
+                //     anchors.fill: parent
                     // source: image
-                    // TODO(huangchsh): 可考虑增加设备背景图片
-                }
+                // }
 
                 MouseArea
                 {

@@ -47,7 +47,7 @@ SerialPort::~SerialPort()
 
 bool SerialPort::openPort()
 {
-    if(this->isOpen())
+    if(!this->isOpen())
     {
         quint8 retry_times = 5;
         while(retry_times--)
@@ -64,7 +64,7 @@ bool SerialPort::openPort()
         }
     }
 
-    qWarning("Port is open now, do not need to open again.");
+    qWarning("Port is opened now, do not need to open again.");
 
     return false;
 }

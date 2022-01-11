@@ -3,6 +3,7 @@ import QtQuick.Window 2.3
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Controls 2.2
+import QtQuick.Layouts 1.2
 
 
 ApplicationWindow
@@ -23,6 +24,8 @@ ApplicationWindow
 
         anchors.fill: parent
 
+        signal sigCloseTab(var tab_index, string tab_name)
+
         Tab
         {
             active: true
@@ -38,21 +41,54 @@ ApplicationWindow
             frameOverlap: 1
             tab: Rectangle
             {
-                color: "transparent"
+                color: "white"
                 border.color:  "black"
-                implicitWidth: Math.max(text.width + 4, 80)
+                implicitWidth: Math.max(rm_btn.width + text.width + 4, 80)
                 implicitHeight: 20
                 radius: 5
-                Text
+
+                RowLayout
                 {
-                    id: text
-                    anchors.centerIn: parent
-                    text: styleData.title
-                    color: "black"
-                    font.bold: styleData.selected
+                    anchors.fill: parent
+                    Text
+                    {
+                        id: text
+
+                        clip: true
+
+                        Layout.alignment: Qt.AlignCenter
+
+                        text: styleData.title
+                        color: "black"
+                        font.bold: styleData.selected
+                    }
+
+                    Button
+                    {
+                        id: rm_btn
+
+                        Layout.alignment: Qt.AlignRight
+
+                        visible: text.text == qsTr("可选连接列表") ? false : true
+
+                        text: qsTr("×")
+
+                        background: Rectangle
+                        {
+                            anchors.fill: parent
+                            color: "transparent"
+                            border.color: "transparent"
+                        }
+
+                        onClicked:
+                        {
+                            page_tab_view.sigCloseTab(index, text.text)
+                        }
+                    }
                 }
             }
-            frame: ScanLinksListInterface {}
+
+            frame: ScanLinksListInterface { }
         }
     }
 }

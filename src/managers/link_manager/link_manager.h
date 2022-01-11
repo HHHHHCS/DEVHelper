@@ -20,13 +20,13 @@ namespace managers
         signals:
             void linkInfoMap(const QVariantMap link_info_list);
             void linkAdded();
-            void linkRemoved();
 
         private slots:
             void linkDisconnected();
 
         public:
             Q_INVOKABLE void createChoiceLink(const QString name); // 创建所选连接
+            Q_INVOKABLE void removeChoiceLink(const QString name); // 删除所选连接
 
             Q_ENUM(communication::Link::LinkType);
 

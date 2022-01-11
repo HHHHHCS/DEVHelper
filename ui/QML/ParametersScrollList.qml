@@ -31,8 +31,6 @@ Item
         {
             id: scrollview
 
-            anchors.top: label.bottom
-            anchors.left: parent.left
             Layout.preferredWidth: parent.width; Layout.preferredHeight: parent.height - (label.y + label.height)
 
             clip: true
