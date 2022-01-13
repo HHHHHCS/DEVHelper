@@ -9,6 +9,9 @@ namespace time
 {
     using namespace std::chrono;
 
+    using Clock = system_clock;
+    using SteadyClock = steady_clock;
+
     using Time = system_clock::time_point;
     using SteadyTime = steady_clock::time_point;
 
@@ -17,16 +20,10 @@ namespace time
     using ms = milliseconds;
     using ns = nanoseconds;
 
-    template<typename StruT>
-    inline double now()
+    template<typename ClockT, typename PrecT>
+    inline double elapsed(ClockT::time_point rec)
     {
-        return duration_cast<duration<double>>(StruT::now()).count();
-    }
-
-    template<typename StruT, typename PrecT>
-    inline double elapsed(StruT rec)
-    {
-        return (duration_cast<PrecT>(StruT::now() - rec).count());
+        return (duration_cast<PrecT>(ClockT::now() - rec).count());
     }
 }   // namespace time
 }   // namespace util

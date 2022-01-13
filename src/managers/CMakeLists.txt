@@ -10,14 +10,17 @@ add_library(managers
 
 target_link_libraries(managers
 PUBLIC
-  dev_helper_src
-  link_manager
-  main_manager
-  parameters_manager
-  upgrade_manager
+    Qt5::Core
+    Qt5::Qml
+    Qt5::Widgets
+
+    link_manager
+    main_manager
+    parameters_manager
+    upgrade_manager
 )
 
 target_include_directories(managers
-PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}
+INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )

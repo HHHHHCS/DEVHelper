@@ -17,8 +17,6 @@ PUBLIC
 )
 
 target_include_directories(serial_lib
-INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}
 PUBLIC
     q_serial
 )

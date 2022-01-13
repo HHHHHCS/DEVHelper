@@ -5,7 +5,7 @@ add_library(upgrade_manager
 
 target_link_libraries(upgrade_manager
 PRIVATE
-    dev_helper_src
+    managers
 )
 
 target_include_directories(upgrade_manager

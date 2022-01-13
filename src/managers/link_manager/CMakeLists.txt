@@ -9,14 +9,14 @@ add_library(link_manager
 )
 
 target_link_libraries(link_manager
-PRIVATE
-    dev_helper_src
-
+INTERFACE
     serial_lib
+PRIVATE
+    managers
 )
 
 target_include_directories(link_manager
-PUBLIC
+INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
     link_interface
     proto_interface

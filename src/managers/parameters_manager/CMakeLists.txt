@@ -5,7 +5,8 @@ add_library(parameters_manager
 
 target_link_libraries(parameters_manager
 PRIVATE
-    dev_helper_src
+    managers
+    tasks_lib
 )
 
 target_include_directories(parameters_manager

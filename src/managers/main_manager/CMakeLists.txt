@@ -5,7 +5,7 @@ add_library(main_manager
 
 target_link_libraries(main_manager
 PRIVATE
-    dev_helper_src
+    managers
 )
 
 target_include_directories(main_manager

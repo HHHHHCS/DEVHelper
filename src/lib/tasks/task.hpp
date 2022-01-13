@@ -2,11 +2,12 @@
 
 #include <limits>
 #include <string>
-#include <chrono>
-#include <memory>
 #include <deque>
+#include <memory>
+#include <functional>
+#include <thread>
 
-#include "util/time.h"
+#include "../util/time_lib/time_lib.hpp"
 
 
 namespace tasks
@@ -15,9 +16,17 @@ namespace tasks
     static constexpr uint8_t MIN_PRIORITY = std::numeric_limits<uint8_t>::min();
     static constexpr uint8_t DEFAULT_PRIORITY = (MIN_PRIORITY + MAX_PRIORITY) / 2;
 
-    enum class TaskState : int8_t
+    enum class TaskAttributeType: int8_t
     {
-        INVALID,
+        INVALID = -1,
+        PRIORITY,
+        STATE,
+        // TODO(huangchsh): 后续属性在此添加
+    };
+
+    enum class TaskStateType : int8_t
+    {
+        INVALID = -1,
         READY,
         DOING,
         STOP,
@@ -25,31 +34,42 @@ namespace tasks
         TERMINATE,
     };
 
-    template<typename dT>
+    using TaskFunc = std::function<void()>;
+
     class Task
     {
+        friend class TasksQueue;
+
         public:
-            explicit Task(const std::string name, const uint8_t prio = DEFAULT_PRIORITY, const std::string q_name)
+            explicit Task(const std::string name, const std::string q_name, const double target_mb, TaskFunc func)
                 : _name(name)
                 , _q_name(q_name)
-                , _state(TaskState::READY)
-                , _priority(prio)
-            {
-            }
+                , _priority(DEFAULT_PRIORITY)
+                , _state(TaskStateType::READY)
+                , _target_mb(target_mb)
+                , _task_func(func) { }
 
             // TODO(huangchsh): 任务控制权转移及拷贝
 
-            ~Task() = default;
+            ~Task()
+            {
+                if(_work_thread->joinable())
+                {
+                    _work_thread->join();
+                }
 
-            void setTarget(const double target_mb) { _target_mb = target_mb; }
+                _work_thread = nullptr;
+                _task_func = nullptr;
+            }
 
             std::string getName() const { return _name; }
             std::string getQueueName() const { return _q_name; }
-            TaskState getState() const { return _state; }
+            TaskStateType getState() const { return _state; }
             uint8_t getPriority() const { return _priority; }
-            double getTarget() const { return _target_mb; }
+            double getTargetSpendTime() const { return _target_spend_time; }
+            double getTargetMb() const { return _target_mb; }
             double getSpeed() const { return _speed_mb_s; }
-            double getDone() const { return _done_mb; }
+            double getDoneMb() const { return _done_mb; }
             double getDonePercent() const { return _done_percent; }
 
             void start()
@@ -62,72 +82,100 @@ namespace tasks
                 }
 
                 // 除了准备状态外，一律禁止开始
-                if(_state != TaskState::READY)
+                if(_state != TaskStateType::READY)
                 {
                     return;
                 }
 
-                _start_time = util::time::now();
-                _state = TaskState::DOING;
+                _start_time = util::time::SteadyClock::now();
+                _state = TaskStateType::DOING;
             }
 
             void stop()
             {
                 // TODO(huangchsh): 对当前任务状态进行判断，如优先级、速度、时间、状态的影响
-                _state = TaskState::STOP;
+                _state = TaskStateType::STOP;
             }
 
             void teminate()
             {
                 // TODO(huangchsh): 处理任务后续状态
-                _state = TaskState::TERMINATE;
+                _state = TaskStateType::TERMINATE;
             }
 
-            void doWork(std::vector<dT>& data)
+            void doWork()
             {
-                if(_state != TaskState::DOING)
+                if(_state != TaskStateType::DOING)
                 {
                     return;
                 }
 
-                
+                if(!_task_func)
+                {
+                    _state = TaskStateType::TERMINATE;
+                    return;
+                }
+
+                _work_thread = new std::thread([this]()
+                {
+                    while(_state != TaskStateType::FINISH)
+                    {
+                        if(_state == TaskStateType::STOP)
+                        {
+                            std::this_thread::sleep_for(std::chrono::seconds(1));
+                            continue;
+                        }
+
+                        if(_state == TaskStateType::TERMINATE)
+                        {
+                            break;
+                        }
+
+                        _task_func();
+
+                        updateState();
+                    }
+                });
             }
 
         private:
-            const uint8_t _priority;
-
             std::string _name;
             std::string _q_name;
 
-            TaskState _state;
-            double _target_mb;
+            uint8_t _priority;
+
+            TaskStateType _state;
+            const double _target_mb;
             double _done_mb;
             double _done_percent;
-
-            double _speed_mb_s;
+            double _speed_mb_s;  // 当前速度
+            double _spend_time;  // 当前用时
 
             // TODO(huangchsh): 需要记录时间，期望完成时间及当前时间，做到加减速
             util::time::SteadyTime _start_time;   // 任务开始时间
-            double _spend_time;  // 当前用时
-            double _exp_finish_time; // 期望完成时间
-            double _exp_speed;   // 期望执行速度
+            double _target_spend_time;  // 预计用时
+
+            double _exp_spend_time; // 期望用时
+
+            TaskFunc _task_func;
+            std::thread* _work_thread;
+
+            void setPriority(const uint8_t prio) { _priority = prio; }
+            void setState(const TaskStateType state) { _state = state; }
+            void setTargetSpendTime(const double time) { _target_spend_time = time; }
+            void setExpSpendTime(const double time) { _exp_spend_time = time; }
 
             void updateState()
             {
-                if(_state == TaskState::FINISH)
-                {
-                    return;
-                }
-
                 _done_percent = (_done_mb / _target_mb) * 100.f;
 
-                _spend_time = util::time::elapsed<util::time::SteadyTime, util::time::ms>(_start_time);
+                _spend_time = util::time::elapsed<util::time::SteadyClock, util::time::SteadyTime, util::time::ms>(_start_time);
                 _speed_mb_s = (_target_mb - _done_mb) / _spend_time;
 
-                _state = (_done_mb < _target_mb) ? TaskState::DOING : TaskState::FINISH;
+                _state = (_done_mb < _target_mb) ? TaskStateType::DOING : TaskStateType::FINISH;
                 // TODO(huangchsh): 能够推算期望速度及期望完成时间
             }
     };
     using SharedPtrTask = std::shared_ptr<Task>;
     using WeakPtrTask = std::weak_ptr<Task>;
-}
+}   // namespace tasks
