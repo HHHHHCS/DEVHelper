@@ -56,12 +56,16 @@ namespace tasks
             uint8_t getTasksCount() const { return _q.size(); }
             TasksQueueStateType getTasksQueueState() const { return _q_state; }
 
-            void addTask(const Task& task);
+            bool addTask(const Task& task)
+            {
+
+            }
+
+            bool addFastTask(const Task& task);
 
             void removeTask(const std::string task_name);
 
-            void modifyTaskAttribute(const TaskAttributeType type);
-
+            bool modifyTaskAttribute(const TaskAttributeType type);
 
         private:
             std::string _q_name;

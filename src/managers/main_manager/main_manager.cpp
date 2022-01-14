@@ -1,6 +1,8 @@
 #include <QQmlContext>
 
 #include "link_manager.h"
+#include "parameters_manager.h"
+#include "upgrade_manager.h"
 #include "main_manager.h"
 
 
@@ -23,6 +25,8 @@ QQmlApplicationEngine* MainManager::createQMLAppEngine(QObject *parent /* = null
     p_qml_app_engine->addImportPath("qrc:/QML");
     // 设置根对象属性，用于UI交互
     p_qml_app_engine->rootContext()->setContextProperty("link_manager_obj", man_collect()->link_man());
+    p_qml_app_engine->rootContext()->setContextProperty("param_manager_obj", man_collect()->param_man());
+    p_qml_app_engine->rootContext()->setContextProperty("upgrade_manager_obj", man_collect()->upgrade_man());
 
     return p_qml_app_engine;
 }

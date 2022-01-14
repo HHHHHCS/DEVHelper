@@ -11,6 +11,7 @@ add_library(link_manager
 target_link_libraries(link_manager
 INTERFACE
     serial_lib
+    tasks_lib
 PRIVATE
     managers
 )

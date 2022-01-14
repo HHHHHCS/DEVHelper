@@ -27,11 +27,12 @@ LinkManager::~LinkManager()
     m_p_serial_scan_thread = nullptr;
 
     disconnectAll();
+
 }
 
 void LinkManager::createScanLinksListWork()
 {
-    // 1. 创建搜索可连接USB或串口端口的线程
+    // 1. 创建可连接USB或串口端口的搜索线程
     m_p_serial_scan_thread = new std::thread([this]()
     {
         QList<port_lib::PortInfoStru> links_list;
@@ -58,7 +59,7 @@ void LinkManager::createScanLinksListWork()
                 // TODO(huangchsh): 需要对设备通过类型进行区分及显示
                 if(!m_link_info_map.isEmpty())
                 {
-                    emit linkInfoMap(m_link_info_map);
+                    emit fetchLinkInfoMap(m_link_info_map);
                     m_link_info_map.clear();
                 }
             }
@@ -67,9 +68,12 @@ void LinkManager::createScanLinksListWork()
         }
     });
 
-    // TODO(huangchsh): 创建搜索可连接USB或串口端口的线程
+    // TODO(huangchsh): 创建可连接TCP或UDP搜索线程
+
+    // TODO(huangchsh): 创建其他可连接搜索线程
 }
 
+// TODO(huangchsh): 优化项，确定单个连接对应的任务队列个数
 void LinkManager::createChoiceLink(const QString name)
 {
     // TODO(huangchsh): 暂时只先实现串口类型，其余类型后续添加
@@ -83,13 +87,20 @@ void LinkManager::createChoiceLink(const QString name)
     // connect(p_create_link->get(), &communication::Link::bytesSent, , );
     connect(p_create_link.get(), &communication::Link::disconnected, this, &LinkManager::linkDisconnected);
 
-    m_links_list.append(p_create_link);
-
     if(p_create_link->connect())
     {
+        // 连接成功后，创建任务队列，插入map
+        QList<tasks::SharedPtrTasksQueue> link_task_q_list;
+
+        tasks::SharedPtrTasksQueue p_link_task_queue = std::make_shared<tasks::TasksQueue>(name + "_q_1");
+
+        link_task_q_list.append(p_link_task_queue);
+
         qDebug("%s connected", p_create_link->getPortName().toStdString().data());
 
-        emit linkAdded();
+        emit addLink();
+
+        m_links_map.insert(p_create_link, link_task_q_list);
     }
     else
     {
@@ -109,19 +120,19 @@ void LinkManager::removeChoiceLink(const QString name)
 
 void LinkManager::disconnectAll()
 {
-    QList<communication::SharedLinkPtr> lins_ptr_list = m_links_list;
-
-    for(const auto &link : lins_ptr_list)
+    searchLinkToDo([](communication::SharedLinkPtr link_shptr)
     {
-        link->disconnect();
-    }
+        link_shptr->disconnect();
+
+        return link_shptr;
+    });
 }
 
 void LinkManager::linkDisconnected()
 {
     communication::Link* link = qobject_cast<communication::Link*>(sender());
 
-    if(!link || !isBelong2LinksList(link))
+    if(!link)
     {
         return;
     }
@@ -134,40 +145,53 @@ void LinkManager::linkDisconnected()
     // disconnect(link, &communication::Link::bytesSent, , );
     disconnect(link, &communication::Link::disconnected, this, &LinkManager::linkDisconnected);
 
-    for(int i = 0; i < m_links_list.count(); ++i)
+    searchLinkToDo([&link, this](communication::SharedLinkPtr link_shptr)
     {
-        if(m_links_list[i].get() == link)
+        if(link_shptr.get() == link)
         {
-            m_links_list.removeAt(i);
+            m_links_map.remove(link_shptr);
 
-            return;
+            return link_shptr;
         }
-    }
+
+        return communication::SharedLinkPtr(nullptr);
+    });
 }
 
 communication::SharedLinkPtr LinkManager::getSharedLinkPtrByLinkName(const QString name)
 {
-    for (int i = 0; i< m_links_list.count(); i++)
+    auto p_link = searchLinkToDo([name](communication::SharedLinkPtr link_shptr)
     {
-        communication::SharedLinkPtr link = m_links_list[i];
-        if (link.get()->getPortName() == name)
+        if(link_shptr.get()->getPortName() == name)
         {
-            return link;
+            return link_shptr;
         }
-    }
 
-    return communication::SharedLinkPtr(nullptr);
+        return communication::SharedLinkPtr(nullptr);
+    });
+
+    return p_link;
 }
 
-bool LinkManager::isBelong2LinksList(communication::Link* link)
+communication::SharedLinkPtr LinkManager::searchLinkToDo(LinkOptFunc func)
 {
-    for(int i = 0; i < m_links_list.count(); ++i)
+    communication::SharedLinkPtr link_ptr = nullptr;
+
+    LinkTasksQueueMap& links_map = m_links_map;
+
+    LinkTasksQueueMapConstIter iter = links_map.cbegin();
+    while(iter != links_map.cend())
     {
-        if(m_links_list[i].get() == link)
+        auto iter_link = iter.key();
+
+        link_ptr = func(iter_link);
+        if(link_ptr)
         {
-            return true;
+            break;
         }
+
+        ++iter;
     }
 
-    return false;
+    return link_ptr;
 }

@@ -35,7 +35,7 @@ Item
         target: link_manager_obj
 
         // 可选连接列表信号槽
-        onLinkInfoMap:
+        onFetchLinkInfoMap:
         {
             waiting_view_label.visible = false
             link_listview.visible = true
@@ -53,7 +53,7 @@ Item
         }
 
         // 选择连接添加信号槽
-        onLinkAdded:
+        onAddLink:
         {
             // 增加连接即增加窗口选项卡
             var tab_name = link_listview_model.get(link_listview.currentIndex).name + ":" + link_listview_model.get(link_listview.currentIndex).description

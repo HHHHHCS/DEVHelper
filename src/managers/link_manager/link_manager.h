@@ -1,11 +1,14 @@
 #pragma once
 
+#include <functional>
 #include <thread>
 #include <atomic>
 
 #include <QObject>
 #include <QMap>
 #include <QString>
+
+#include "tasks_queue.hpp"
 
 #include "manager_collection.h"
 #include "serial_link.h"
@@ -18,8 +21,8 @@ namespace managers
         Q_OBJECT
 
         signals:
-            void linkInfoMap(const QVariantMap link_info_list);
-            void linkAdded();
+            void fetchLinkInfoMap(const QVariantMap link_info_list);
+            void addLink();
 
         private slots:
             void linkDisconnected();
@@ -38,12 +41,18 @@ namespace managers
             // void setConnectionsAllowed() { m_connections_suspended = false; }
 
             QVariantMap getLinkInfoMap() const { return m_link_info_map; }
-            int getLinkNum() const { return m_links_list.count(); }
+            int getLinkNum() const { return m_links_map.count(); }
             communication::SharedLinkPtr getSharedLinkPtrByLinkName(const QString name);
 
             void createScanLinksListWork();
-            bool isBelong2LinksList(communication::Link* link);
             void disconnectAll();
+
+        private:
+            using LinkTasksQueueMap = QMap<communication::SharedLinkPtr, QList<tasks::SharedPtrTasksQueue>>;
+            using LinkTasksQueueMapConstIter = QMap<communication::SharedLinkPtr, QList<tasks::SharedPtrTasksQueue>>::const_iterator;
+            using LinkTasksQueueMapIter = QMap<communication::SharedLinkPtr, QList<tasks::SharedPtrTasksQueue>>::iterator;
+
+            using LinkOptFunc = std::function<communication::SharedLinkPtr(communication::SharedLinkPtr)>;
 
         private:
             static constexpr char *LINK_DEV_NAME_LIST[] = {"rc", "rn", "rp", "ba", "uav"};   // 可选设备列表
@@ -53,8 +62,10 @@ namespace managers
 
             QVariantMap m_link_info_map;   // 可连接端口名列表
 
-            QList<communication::SharedLinkPtr> m_links_list;   // 选择的连接端口指针对象
+            LinkTasksQueueMap m_links_map;   // 选择的连接端口指针对象及其携带的任务队列
 
             // bool m_connections_suspended;
+
+            communication::SharedLinkPtr searchLinkToDo(LinkOptFunc func);
     };
 }   // namespace managers
