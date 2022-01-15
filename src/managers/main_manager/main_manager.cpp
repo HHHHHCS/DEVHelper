@@ -1,4 +1,4 @@
-#include <QQmlContext>
+﻿#include <QQmlContext>
 
 #include "link_manager.h"
 #include "parameters_manager.h"
@@ -18,6 +18,9 @@ MainManager::~MainManager()
 {
 }
 
+/**
+ * @brief 创建QML应用引擎
+ */
 QQmlApplicationEngine* MainManager::createQMLAppEngine(QObject *parent /* = nullptr */)
 {
     QQmlApplicationEngine *p_qml_app_engine = new QQmlApplicationEngine(parent);
@@ -31,6 +34,9 @@ QQmlApplicationEngine* MainManager::createQMLAppEngine(QObject *parent /* = null
     return p_qml_app_engine;
 }
 
+/**
+ * @brief 创建QML初始窗口
+ */
 void MainManager::createMainWindow(QQmlApplicationEngine *qml_engine)
 {
     Q_CHECK_PTR(qml_engine);

@@ -1,4 +1,4 @@
-#include "main_manager.h"
+﻿#include "main_manager.h"
 #include "link_manager.h"
 
 #include "dev_helper_application.h"

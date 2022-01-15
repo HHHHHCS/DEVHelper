@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <limits>
 #include <string>
@@ -169,7 +169,7 @@ namespace tasks
             {
                 _done_percent = (_done_mb / _target_mb) * 100.f;
 
-                _spend_time = util::time::elapsed<util::time::SteadyClock, util::time::SteadyTime, util::time::ms>(_start_time);
+                _spend_time = util::time::elapsed<util::time::SteadyClock, util::time::ms>(_start_time);
                 _speed_mb_s = (_target_mb - _done_mb) / _spend_time;
 
                 _state = (_done_mb < _target_mb) ? TaskStateType::DOING : TaskStateType::FINISH;

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <list>
 #include <memory>
@@ -53,12 +53,12 @@ namespace tasks
                 }
             }
 
-            uint8_t getTasksCount() const { return _q.size(); }
+            size_t getTasksCount() const { return _q.size(); }
             TasksQueueStateType getTasksQueueState() const { return _q_state; }
 
             bool addTask(const Task& task)
             {
-
+                return false;
             }
 
             bool addFastTask(const Task& task);

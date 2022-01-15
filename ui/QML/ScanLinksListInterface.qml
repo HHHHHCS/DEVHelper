@@ -16,8 +16,41 @@ Item
     Component.onCompleted:
     {
         // NOTE(huangchsh): 无连接UI调试代码
-        // page_tab_view.addTab("COM23:rc3 vcom", Qt.createComponent("DevHelperInterface.qml"))
-        // page_tab_view.addTab("COM26:rc3 vcom", Qt.createComponent("DevHelperInterface.qml"))
+        // var component1 = Qt.createComponent("DevHelperInterface.qml")
+        // if(component1.status == Component.Ready)
+        // {
+        //     component1.link_name = "COM23"
+        //     component1.link_description = "rc3 vcom"
+
+        //     console.log(component1.link_name, component1.link_description)
+
+        //     var tab_name = "COM23:rc3 vcom"
+        //     var tab = page_tab_view.addTab(tab_name, component1)
+        //     if(tab)
+        //     {
+        //         tab.active = true
+
+        //         console.log("Add tab", tab_name)
+        //     }
+        // }
+        // var component2 = Qt.createComponent("DevHelperInterface.qml")
+        // if(component2.status == Component.Ready)
+        // {
+        //     component2.link_name = "COM26"
+        //     component2.link_description = "rc3 vcom"
+
+        //     console.log(component2.link_name, component2.link_description)
+
+        //     var tab_name = "COM26:rc3 vcom"
+        //     var tab = page_tab_view.addTab(tab_name, component2)
+        //     if(tab)
+        //     {
+        //         tab.active = true
+
+        //         console.log("Add tab", tab_name)
+        //     }
+        // }
+
         page_tab_view.sigCloseTab.connect(slotLinkRemove)
 
         // 连接选项删除槽
@@ -35,7 +68,7 @@ Item
         target: link_manager_obj
 
         // 可选连接列表信号槽
-        onFetchLinkInfoMap:
+        onSigFetchLinkInfoMap:
         {
             waiting_view_label.visible = false
             link_listview.visible = true
@@ -48,17 +81,33 @@ Item
 
             for(var elem in link_info_list)
             {
-                link_listview_model.append({"name" : elem, "description" : link_info_list[elem]});
+                link_listview_model.append({"name" : elem, "description" : link_info_list[elem]})
             }
         }
 
         // 选择连接添加信号槽
-        onAddLink:
+        onSigAddLink:
         {
             // 增加连接即增加窗口选项卡
-            var tab_name = link_listview_model.get(link_listview.currentIndex).name + ":" + link_listview_model.get(link_listview.currentIndex).description
-            page_tab_view.addTab(tab_name, Qt.createComponent("DevHelperInterface.qml"))
-            // TODO(huangchsh): 需要增加输入参数
+            var component = Qt.createComponent("DevHelperInterface.qml")
+            if(component.status == Component.Ready)
+            {
+                component.link_name = link_listview_model.get(link_listview.currentIndex).name
+                component.link_description = link_listview_model.get(link_listview.currentIndex).description
+
+                var tab_name = link_listview_model.get(link_listview.currentIndex).name + ":" + link_listview_model.get(link_listview.currentIndex).description
+                var tab = page_tab_view.addTab(tab_name, component)
+                if(tab)
+                {
+                    tab.active = true
+
+                    console.log("Add tab", tab_name)
+                }
+
+                return
+            }
+
+            console.log(tab_name, " tab not ready")
         }
 
         // TODO(huangchsh): 提供状态改变机制

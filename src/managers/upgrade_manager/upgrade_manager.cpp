@@ -1,4 +1,4 @@
-#include "upgrade_manager.h"
+﻿#include "upgrade_manager.h"
 
 
 using namespace managers;

@@ -1,4 +1,4 @@
-#include <memory>
+﻿#include <memory>
 #include <chrono>
 
 #include <QApplication>
@@ -30,6 +30,10 @@ LinkManager::~LinkManager()
 
 }
 
+/**
+ * @brief 创建可用连接列表扫描线程
+ * @note 扫描周期3s
+ */
 void LinkManager::createScanLinksListWork()
 {
     // 1. 创建可连接USB或串口端口的搜索线程
@@ -59,7 +63,7 @@ void LinkManager::createScanLinksListWork()
                 // TODO(huangchsh): 需要对设备通过类型进行区分及显示
                 if(!m_link_info_map.isEmpty())
                 {
-                    emit fetchLinkInfoMap(m_link_info_map);
+                    emit sigFetchLinkInfoMap(m_link_info_map);
                     m_link_info_map.clear();
                 }
             }
@@ -73,7 +77,12 @@ void LinkManager::createScanLinksListWork()
     // TODO(huangchsh): 创建其他可连接搜索线程
 }
 
-// TODO(huangchsh): 优化项，确定单个连接对应的任务队列个数
+/**
+ * @brief 创建用户于UI的所选连接
+ * @note 建立连接后，创建任务队列，并在UI增加连接选项卡
+ * @todo(huangchsh): 优化项，确定单个连接对应的任务队列个数
+ * @param[in] name: 端口名，如COM1
+ */
 void LinkManager::createChoiceLink(const QString name)
 {
     // TODO(huangchsh): 暂时只先实现串口类型，其余类型后续添加
@@ -85,20 +94,18 @@ void LinkManager::createChoiceLink(const QString name)
     // connect(p_create_link->get(), &communication::Link::bytesReceived, , );
     // TODO(huangchsh): 写入信号
     // connect(p_create_link->get(), &communication::Link::bytesSent, , );
-    connect(p_create_link.get(), &communication::Link::disconnected, this, &LinkManager::linkDisconnected);
+    connect(p_create_link.get(), &communication::Link::disconnected, this, &LinkManager::slotsLinkDisconnected);
 
     if(p_create_link->connect())
     {
         // 连接成功后，创建任务队列，插入map
         QList<tasks::SharedPtrTasksQueue> link_task_q_list;
-
-        tasks::SharedPtrTasksQueue p_link_task_queue = std::make_shared<tasks::TasksQueue>(name + "_q_1");
-
+        tasks::SharedPtrTasksQueue p_link_task_queue = std::make_shared<tasks::TasksQueue>(name.toStdString() + "_q_1");
         link_task_q_list.append(p_link_task_queue);
 
         qDebug("%s connected", p_create_link->getPortName().toStdString().data());
 
-        emit addLink();
+        emit sigAddLink();
 
         m_links_map.insert(p_create_link, link_task_q_list);
     }
@@ -108,6 +115,11 @@ void LinkManager::createChoiceLink(const QString name)
     }
 }
 
+/**
+ * @brief 删除用户于UI的所选连接
+ * @note UI中删除连接选项卡后，删除连接
+ * @param[in] name: UI选项卡对应连接名，端口名，如COM1
+ */
 void LinkManager::removeChoiceLink(const QString name)
 {
     communication::SharedLinkPtr p_link = getSharedLinkPtrByLinkName(name);
@@ -118,6 +130,9 @@ void LinkManager::removeChoiceLink(const QString name)
     }
 }
 
+/**
+ * @brief 断开连接列表中所有连接
+ */
 void LinkManager::disconnectAll()
 {
     searchLinkToDo([](communication::SharedLinkPtr link_shptr)
@@ -128,7 +143,11 @@ void LinkManager::disconnectAll()
     });
 }
 
-void LinkManager::linkDisconnected()
+/**
+ * @brief 连接断开槽
+ * @note 对应信号 communication::Link::disconnected
+ */
+void LinkManager::slotsLinkDisconnected()
 {
     communication::Link* link = qobject_cast<communication::Link*>(sender());
 
@@ -143,7 +162,7 @@ void LinkManager::linkDisconnected()
     // disconnect(link, &communication::Link::bytesReceived, , );
     // TODO(huangchsh): 断连写入信号
     // disconnect(link, &communication::Link::bytesSent, , );
-    disconnect(link, &communication::Link::disconnected, this, &LinkManager::linkDisconnected);
+    disconnect(link, &communication::Link::disconnected, this, &LinkManager::slotsLinkDisconnected);
 
     searchLinkToDo([&link, this](communication::SharedLinkPtr link_shptr)
     {

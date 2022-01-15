@@ -10,8 +10,39 @@ Item
 
     width: parent.width; height: parent.height * 0.46
 
-    // TODO(huangchsh): 提供对外属性
+    property alias label_name: label.text
+    property string belong_link_name
+
     // TODO(huangchsh): 提供对外信号与槽
+    Component.onCompleted:
+    {
+        // TODO(huangchsh): 提供无参数时调试代码
+        // NOTE(huangchsh): 无参数时调试代码
+    }
+
+    Connections
+    {
+        target: param_manager_obj
+        onSigModifyParametersSuccess:
+        {
+            if(belong_link_name == link_name)
+            {
+                for(var name in params_name_list)
+                {
+                    if(name == scrollview_listview_model.get(scrollview_listview.currentIndex).name)
+                    {
+                        scrollview_listview_model.get(scrollview_listview.currentIndex).param_value_text_field.color = "lightgray"
+                    }
+                }
+            }
+        }
+
+        // TODO(huangchsh): 获取参数列表，显示默认字符串
+        onSigFetchParametersMap: //(const QString link_name, const QVariantMap link_params_map);
+        {
+
+        }
+    }
 
     ColumnLayout
     {
@@ -73,17 +104,22 @@ Item
                         leftPadding: 5
                         rightPadding: 10
 
+                        // 参数名
                         Text
                         {
-                            // TODO(huangchsh): 此处text显示参数名，并且对外公有
+                            id: param_name
+
                             text: qsTr(name)
                             elide: Text.ElideLeft
                             font.pixelSize: 15
                         }
 
+                        // 参数值
                         TextField
                         {
-                            width: 200;
+                            id: param_value
+
+                            width: 200
 
                             clip: true
                             focus: true
@@ -92,24 +128,28 @@ Item
                             selectByMouse: true
                             maximumLength: 25
 
+                            property var init_value: parameter
+                            property var value: init_value
+
                             font.pointSize: 10
-                            // TODO(huangchsh): 设备连接后，获取设备信息，显示默认字符串
-                            text: qsTr(parameter)
+
+                            text: qsTr(value)
                             // placeholderTextColor: "Black"
 
                             background: Rectangle
                             {
-                                id: view_component_text_field
+                                id: param_value_text_field
 
                                 implicitWidth: 200
                                 implicitHeight: 15
-                                color: "transparent"
+                                color: "lightgray"
                                 border.color: "Black"
                             }
 
                             onTextEdited:
                             {
                                 // TODO(huangchsh): 增加文本修改判断
+                                param_value_text_field.color = "transparent"
 
                                 if(length > 0)
                                 {
@@ -142,7 +182,8 @@ Item
 
                             onClicked:
                             {
-                                // TODO(huangchsh): 触发保存事件
+                                // 触发保存事件
+                                param_manager_obj.modifyParameters(information_column.link_name, {name: param_value.value})
                             }
                         }
 
@@ -164,7 +205,9 @@ Item
 
                             onClicked:
                             {
-                                // TODO(huangchsh): 触发取消事件，将参数复原
+                                // 触发取消事件，将参数复原
+                                param_value_text_field.color = "lightgray"
+                                param_value_text_field.text = qsTr(param_value_text_field.last_value)
                             }
                         }
                     }

@@ -14,6 +14,10 @@ Item
 
     clip: true
 
+
+    property string link_name
+    property string link_description
+
     FileDialog
     {
         id: firmwareChoosenDialog
@@ -154,12 +158,16 @@ Item
                 ParametersScrollList
                 {
                     id: software_parameters_list
+                    label_name: qsTr("软件参数")
+                    belong_link_name: link_name
                 }
 
                 // 硬件信息
                 ParametersScrollList
                 {
                     id: hardware_parameters_list
+                    label_name: qsTr("硬件参数")
+                    belong_link_name: link_name
                 }
             }
 

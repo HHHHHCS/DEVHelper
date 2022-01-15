@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <chrono>
 
@@ -21,7 +21,7 @@ namespace time
     using ns = nanoseconds;
 
     template<typename ClockT, typename PrecT>
-    inline double elapsed(ClockT::time_point rec)
+    inline double elapsed(typename ClockT::time_point rec)
     {
         return (duration_cast<PrecT>(ClockT::now() - rec).count());
     }

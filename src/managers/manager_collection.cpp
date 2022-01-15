@@ -1,4 +1,4 @@
-#include "link_manager.h"
+﻿#include "link_manager.h"
 #include "main_manager.h"
 #include "parameters_manager.h"
 #include "upgrade_manager.h"
