@@ -14,7 +14,6 @@ Item
 
     clip: true
 
-
     property string link_name
     property string link_description
 
