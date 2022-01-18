@@ -55,31 +55,25 @@ namespace tasks
 
             // TODO(huangchsh): 任务控制权转移及拷贝
             Task(const Task& cpy)
+                : _target_mb(cpy.getTargetMb())
             {
                 _name = cpy.getName();
                 _q_name = cpy.getQueueName();
                 _priority = cpy.getPriority();
                 _state = cpy.getState();
-                _target_mb = cpy.getTargetMb();
                 _task_func = cpy.getTaskFunc();
             }
 
             Task(const Task&& cpy)
+                : _target_mb(cpy.getTargetMb())
             {
                 Task(std::move(cpy));
             }
 
             Task& operator=(const Task&& cpy) = delete;
-            Task& operator=(const Task& cpy)
+            Task& operator=(const Task& cpy) const
             {
-                _name = cpy.getName();
-                _q_name = cpy.getQueueName();
-                _priority = cpy.getPriority();
-                _state = cpy.getState();
-                _target_mb = cpy.getTargetMb();
-                _task_func = cpy.getTaskFunc();
-
-                return *this;
+                return Task(cpy);
             }
 
             virtual ~Task()
@@ -94,7 +88,6 @@ namespace tasks
                 _task_func = nullptr;
             }
 
-        protected:
             std::string getName() const { return _name; }
             std::string getQueueName() const { return _q_name; }
             TaskStateType getState() const { return _state; }
@@ -104,6 +97,8 @@ namespace tasks
             double getSpeed() const { return _speed_mb_s; }
             double getDoneMb() const { return _done_mb; }
             double getDonePercent() const { return _done_percent; }
+
+        protected:
             TaskFunc getTaskFunc() const { return _task_func; }
 
         private:
@@ -113,7 +108,7 @@ namespace tasks
             uint8_t _priority;
 
             TaskStateType _state;
-            double _target_mb;
+            const double _target_mb;
             double _done_mb;
             double _done_percent;
             double _speed_mb_s;  // 当前速度

@@ -35,7 +35,7 @@ namespace tasks
                 , _q_running_tasks_meanwhile_counts(0)
                 , _q_sch_thread(nullptr)
             {
-
+                startupScheduler();
             }
 
             TasksQueue(const TasksQueue& cpy) = delete;
