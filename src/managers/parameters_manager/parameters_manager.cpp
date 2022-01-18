@@ -24,16 +24,35 @@ ParametersManager::~ParametersManager()
  */
 void ParametersManager::slotsCreateParametersMap(const QString link_name)
 {
-    // TODO(huangchsh): 1. 建立任务
-    man_collect()->link_man();
-    // 发送获取请求
+    tasks::SharedPtrTasksQueue task_queue = man_collect()->link_man()->getFreeSharedPtrTasksQueueByLink(link_name);
+    if(!task_queue)
+    {
+        qDebug() << "Failed to request" << link_name.toStdString().data() << "parameters map" << endl;
+        return;
+    }
 
-    // TODO(huangchsh): 2. 插入任务队列
+    tasks::Task task("get_param_list", task_queue->getName() , 0., [&, this]()
+    {
+        // TODO(huangchsh): 1. 发送获取请求
+        // TODO(huangchsh): 2. 等待反馈
+        bool result = false;
+        // result =
+        // 4. 发出参数列表信号
+        if(result)
+        {
+            emit sigFetchParametersMap(link_name, m_dev_params_map[link_name]);
+        }
+    });
 
-    // TODO(huangchsh): 3. 等待任务完成信号，修改参数列表
-
-    // 4. 发出参数列表信号
-    // emit fetchParametersMap(m_dev_params_map);
+    bool result = task_queue->addFastTask(task);
+    if(result)
+    {
+        qDebug() << "Append task get_param_list into queue" << task_queue->getName().data() << endl;
+    }
+    else
+    {
+        qDebug() << "Append task get_param_list into queue" << task_queue->getName().data() << endl;
+    }
 }
 
 /**

@@ -63,6 +63,6 @@ namespace communication
 
             virtual bool connect() = 0;
     };
-    using SharedLinkPtr = std::shared_ptr<Link>;
-    using WeakLinkPtr = std::weak_ptr<Link>;
+    using SharedPtrLink = std::shared_ptr<Link>;
+    using WeakPtrLink = std::weak_ptr<Link>;
 }   // namespace communication

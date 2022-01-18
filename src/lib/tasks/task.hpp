@@ -211,7 +211,14 @@ namespace tasks
                             // TODO(huangchsh): 执行捕获错误，进入终止态
                             if(_state != TaskStateType::TERMINATE)
                             {
-                                _task_func();
+                                try
+                                {
+                                    _task_func();
+                                }
+                                catch(std::exception &e)
+                                {
+                                    _state = TaskStateType::TERMINATE;
+                                }
                             }
 
                             updateState();

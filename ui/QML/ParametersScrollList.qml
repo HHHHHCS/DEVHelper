@@ -10,6 +10,7 @@ Item
 
     width: parent.width; height: parent.height * 0.46
 
+    property string info_type
     property alias label_name: label.text
     property string belong_link_name
 
@@ -23,6 +24,8 @@ Item
     Connections
     {
         target: param_manager_obj
+
+        // 参数修改成功信号槽
         onSigModifyParametersSuccess:
         {
             if(belong_link_name == link_name)
@@ -37,10 +40,26 @@ Item
             }
         }
 
-        // TODO(huangchsh): 获取参数列表，显示默认字符串
-        onSigFetchParametersMap: //(const QString link_name, const QVariantMap link_params_map);
+        // 获取参数列表信号槽
+        onSigFetchParametersMap:
         {
+            if(belong_link_name == link_name)
+            {
+                for(var elem in link_params_map)
+                {
+                    var hw_parameters = {};
+                    var sw_parameters = {};
 
+                    for(var elem in link_params_map)
+                    {
+                        // 通过参数中的 info_type进行软硬件参数区分
+                        if(elem.match(info_type))
+                        {
+                            scrollview_listview_model.append({"name" : elem, "parameter" : link_params_map[elem]})
+                        }
+                    }
+                }
+            }
         }
     }
 

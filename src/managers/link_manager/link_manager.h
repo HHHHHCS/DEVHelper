@@ -65,7 +65,8 @@ namespace managers
 
             QVariantMap getLinkInfoMap() const { return m_link_info_map; }
             int getLinkNum() const { return m_links_map.count(); }
-            communication::SharedLinkPtr getSharedLinkPtrByLinkName(const QString name);
+            communication::SharedPtrLink getSharedPtrLinkByName(const QString name);
+            tasks::SharedPtrTasksQueue getFreeSharedPtrTasksQueueByLink(const QString name);
 
             /**
              * @brief 创建可用连接列表扫描线程
@@ -79,11 +80,14 @@ namespace managers
             void disconnectAll();
 
         private:
-            using LinkTasksQueueMap = QMap<communication::SharedLinkPtr, QList<tasks::SharedPtrTasksQueue>>;
-            using LinkTasksQueueMapConstIter = QMap<communication::SharedLinkPtr, QList<tasks::SharedPtrTasksQueue>>::const_iterator;
-            using LinkTasksQueueMapIter = QMap<communication::SharedLinkPtr, QList<tasks::SharedPtrTasksQueue>>::iterator;
+            using TasksQueuePtrList = QList<tasks::SharedPtrTasksQueue>;
+            using TasksQueuePtrListIterator = TasksQueuePtrList::Iterator;
+            using TasksQueuePtrListConstIterator = TasksQueuePtrList::ConstIterator;
+            using LinkTasksQueueMap = QMap<communication::SharedPtrLink, TasksQueuePtrList>;
+            using LinkTasksQueueMapConstIterator = LinkTasksQueueMap::ConstIterator;
+            using LinkTasksQueueMapIterator = LinkTasksQueueMap::Iterator;
 
-            using LinkOptFunc = std::function<communication::SharedLinkPtr(communication::SharedLinkPtr)>;
+            using LinkOptFunc = std::function<communication::SharedPtrLink(communication::SharedPtrLink)>;
 
         private:
             static constexpr char *LINK_DEV_NAME_LIST[] = {"rc", "rn", "rp", "ba", "uav"};   // 可选设备列表
@@ -95,6 +99,6 @@ namespace managers
 
             LinkTasksQueueMap m_links_map;   // 选择的连接端口指针对象及其携带的任务队列
 
-            communication::SharedLinkPtr searchLinkToDo(LinkOptFunc func);
+            communication::SharedPtrLink searchLinkToDo(LinkOptFunc func);
     };
 }   // namespace managers

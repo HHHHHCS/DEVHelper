@@ -20,11 +20,14 @@ LinkManager::~LinkManager()
 {
     m_serial_scan_thread_stop_flag = true;
     // 回收检测端口线程资源
-    if(m_p_serial_scan_thread->joinable())
+    if(m_p_serial_scan_thread)
     {
-        m_p_serial_scan_thread->join();
+        if(m_p_serial_scan_thread->joinable())
+        {
+            m_p_serial_scan_thread->join();
+        }
+        m_p_serial_scan_thread = nullptr;
     }
-    m_p_serial_scan_thread = nullptr;
 
     disconnectAll();
 
@@ -85,8 +88,13 @@ void LinkManager::createScanLinksListWork()
  */
 void LinkManager::createChoiceLink(const QString name)
 {
+    // TODO(huangchsh): 同名连接检测
     // TODO(huangchsh): 暂时只先实现串口类型，其余类型后续添加
-    communication::SharedLinkPtr p_create_link = std::make_shared<communication::SerialLink>(name, 921600);
+    communication::SharedPtrLink p_create_link = std::make_shared<communication::SerialLink>(name, 921600);
+    if(!p_create_link)
+    {
+        return;
+    }
 
     // TODO(huangchsh): 通信错误信号
     // connect(p_create_link->get(), &communication::Link::commError, , );
@@ -99,15 +107,16 @@ void LinkManager::createChoiceLink(const QString name)
     if(p_create_link->connect())
     {
         // 连接成功后，创建任务队列，插入map
+        // TODO(huangchsh): 通过index支持多条队列
         QList<tasks::SharedPtrTasksQueue> link_task_q_list;
         tasks::SharedPtrTasksQueue p_link_task_queue = std::make_shared<tasks::TasksQueue>(name.toStdString() + "_q_1");
         link_task_q_list.append(p_link_task_queue);
 
-        qDebug("%s connected", p_create_link->getPortName().toStdString().data());
-
-        emit sigAddLink();
+        qDebug("%s connected", p_create_link->getPortName().toStdString().data(), link_task_q_list.count());
 
         m_links_map.insert(p_create_link, link_task_q_list);
+
+        emit sigAddLink();
     }
     else
     {
@@ -122,8 +131,9 @@ void LinkManager::createChoiceLink(const QString name)
  */
 void LinkManager::removeChoiceLink(const QString name)
 {
-    communication::SharedLinkPtr p_link = getSharedLinkPtrByLinkName(name);
-    if(p_link.get())
+    communication::SharedPtrLink p_link = getSharedPtrLinkByName(name);
+    if(p_link
+    && p_link.get())
     {
         p_link->disconnect();
         qDebug("%s disconnected", p_link->getPortName().toStdString().data());
@@ -135,11 +145,15 @@ void LinkManager::removeChoiceLink(const QString name)
  */
 void LinkManager::disconnectAll()
 {
-    searchLinkToDo([](communication::SharedLinkPtr link_shptr)
+    searchLinkToDo([](communication::SharedPtrLink link_shptr)
     {
-        link_shptr->disconnect();
+        if(link_shptr)
+        {
+            link_shptr->disconnect();
+            return link_shptr;
+        }
 
-        return link_shptr;
+        return communication::SharedPtrLink(nullptr);
     });
 }
 
@@ -150,7 +164,6 @@ void LinkManager::disconnectAll()
 void LinkManager::slotsLinkDisconnected()
 {
     communication::Link* link = qobject_cast<communication::Link*>(sender());
-
     if(!link)
     {
         return;
@@ -164,41 +177,62 @@ void LinkManager::slotsLinkDisconnected()
     // disconnect(link, &communication::Link::bytesSent, , );
     disconnect(link, &communication::Link::disconnected, this, &LinkManager::slotsLinkDisconnected);
 
-    searchLinkToDo([&link, this](communication::SharedLinkPtr link_shptr)
+    searchLinkToDo([&link, this](communication::SharedPtrLink link_shptr)
     {
-        if(link_shptr.get() == link)
+        if(link_shptr
+        && link_shptr.get() == link)
         {
             m_links_map.remove(link_shptr);
 
             return link_shptr;
         }
 
-        return communication::SharedLinkPtr(nullptr);
+        return communication::SharedPtrLink(nullptr);
     });
 }
 
-communication::SharedLinkPtr LinkManager::getSharedLinkPtrByLinkName(const QString name)
+communication::SharedPtrLink LinkManager::getSharedPtrLinkByName(const QString name)
 {
-    auto p_link = searchLinkToDo([name](communication::SharedLinkPtr link_shptr)
+    return searchLinkToDo([name](communication::SharedPtrLink link_shptr)
     {
-        if(link_shptr.get()->getPortName() == name)
+        if(link_shptr
+        && link_shptr.get()->getPortName() == name)
         {
             return link_shptr;
         }
 
-        return communication::SharedLinkPtr(nullptr);
+        return communication::SharedPtrLink(nullptr);
     });
-
-    return p_link;
 }
 
-communication::SharedLinkPtr LinkManager::searchLinkToDo(LinkOptFunc func)
+tasks::SharedPtrTasksQueue LinkManager::getFreeSharedPtrTasksQueueByLink(const QString name)
 {
-    communication::SharedLinkPtr link_ptr = nullptr;
+    communication::SharedPtrLink p_link = getSharedPtrLinkByName(name);
+    if(!p_link)
+    {
+        return tasks::SharedPtrTasksQueue(nullptr);
+    }
+
+    // TODO(huangchsh): 筛选当前空闲队列
+    TasksQueuePtrList tasks_q_ptr_list = m_links_map[p_link];
+    for(auto &item : tasks_q_ptr_list)
+    {
+        // TODO(huangchsh): 通过index支持多条队列
+        if(item->getName() == (name.toStdString() + "_q_1"))
+        {
+            return item;
+        }
+    }
+    return tasks::SharedPtrTasksQueue(nullptr);
+}
+
+communication::SharedPtrLink LinkManager::searchLinkToDo(LinkOptFunc func)
+{
+    communication::SharedPtrLink link_ptr = nullptr;
 
     LinkTasksQueueMap& links_map = m_links_map;
 
-    LinkTasksQueueMapConstIter iter = links_map.cbegin();
+    LinkTasksQueueMapConstIterator iter = links_map.cbegin();
     while(iter != links_map.cend())
     {
         auto iter_link = iter.key();

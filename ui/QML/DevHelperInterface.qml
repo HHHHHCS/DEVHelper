@@ -157,6 +157,7 @@ Item
                 ParametersScrollList
                 {
                     id: software_parameters_list
+                    info_type: "sw"
                     label_name: qsTr("软件参数")
                     belong_link_name: link_name
                 }
@@ -165,6 +166,7 @@ Item
                 ParametersScrollList
                 {
                     id: hardware_parameters_list
+                    info_type: "hw"
                     label_name: qsTr("硬件参数")
                     belong_link_name: link_name
                 }

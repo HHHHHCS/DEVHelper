@@ -28,7 +28,7 @@ namespace managers
              * @brief 获取参数列表信号
              * @note 对应槽
              * @param[in] link_name: 连接名
-             * @param[in] link_params_mapp: 若干参数（包括参数名及参数值）
+             * @param[in] link_params_map: 若干参数（包括参数名及参数值）
              */
             void sigFetchParametersMap(const QString link_name, const QVariantMap link_params_map);
 
