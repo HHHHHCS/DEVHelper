@@ -60,6 +60,10 @@ Item
         }
 
         // TODO(huangchsh): 提供连接状态改变机制，用于判断连接是否异常
+        onSigUpdataLinkStatus:
+        {
+            // TODO(huangchsh): 修改选项卡状态
+        }
     }
 
     Label

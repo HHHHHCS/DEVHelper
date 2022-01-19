@@ -112,11 +112,28 @@ void LinkManager::createChoiceLink(const QString name)
         tasks::SharedPtrTasksQueue p_link_task_queue = std::make_shared<tasks::TasksQueue>(name.toStdString() + "_q_1");
         link_task_q_list.append(p_link_task_queue);
 
-        qDebug("%s connected", p_create_link->getPortName().toStdString().data(), link_task_q_list.count());
+        tasks::Task task(p_link_task_queue->getName() + "heartbeat", p_link_task_queue->getName() , 0., [&, this]()
+        {
+            // TODO(huangchsh): 发送心跳协议
+            // TODO(huangchsh): 等待设备响应
+            // TODO(huangchsh): 更新连接及选项卡状态
+            // emit sigUpdataLinkStatus(status);
+        });
+        bool result = p_link_task_queue->addFastTask(task);
+        if(result)
+        {
+            qDebug() << "Append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
+        }
+        else
+        {
+            qDebug() << "Failed append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
+        }
 
         m_links_map.insert(p_create_link, link_task_q_list);
 
         emit sigAddLink();
+
+        qDebug("%s connected", p_create_link->getPortName().toStdString().data(), link_task_q_list.count());
     }
     else
     {

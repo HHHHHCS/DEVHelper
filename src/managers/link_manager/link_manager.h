@@ -35,6 +35,13 @@ namespace managers
              */
             void sigAddLink();
 
+            /**
+             * @brief 更新连接状态信号
+             * @note 对应处理于ScanLinksListInterface.qml中
+             * @note 连接状态变化时发出
+             */
+            void sigUpdataLinkStatus(const QVariant status);
+
         private slots:
             /**
              * @brief 连接断开槽
@@ -56,6 +63,15 @@ namespace managers
              * @param[in] name: UI选项卡对应连接名，端口名，如COM1
              */
             Q_INVOKABLE void removeChoiceLink(const QString name);
+
+            enum class LinkStatusType : uint8_t
+            {
+                CONNECTED,
+                DISCONNECTED,
+                LOST,
+                RECONNECTED,
+            };
+            Q_ENUM(LinkStatusType);
 
             Q_ENUM(communication::Link::LinkType);
 

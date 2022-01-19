@@ -44,14 +44,14 @@ void ParametersManager::slotsCreateParametersMap(const QString link_name)
         }
     });
 
-    bool result = task_queue->addFastTask(task);
+    bool result = task_queue->addTask(task);
     if(result)
     {
-        qDebug() << "Append task get_param_list into queue" << task_queue->getName().data() << endl;
+        qDebug() << "Append task" << task.getName().data() << "into queue" << task_queue->getName().data() << endl;
     }
     else
     {
-        qDebug() << "Append task get_param_list into queue" << task_queue->getName().data() << endl;
+        qDebug() << "Failed append task" << task.getName().data() << "into queue" << task_queue->getName().data() << endl;
     }
 }
 
