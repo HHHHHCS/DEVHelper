@@ -1,16 +1,16 @@
-add_library(tasks_lib
+add_library(tasks
     task.hpp
     tasks_queue.hpp
 )
 
-target_link_libraries(tasks_lib
+target_link_libraries(tasks
 INTERFACE
     ${Boost_LIBRARIES}
 
-    util_lib    # TOOD(huangchsh): 此库应该在tasks_lib单独实现
+    util_lib
 )
 
-target_include_directories(tasks_lib
+target_include_directories(tasks
 PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )

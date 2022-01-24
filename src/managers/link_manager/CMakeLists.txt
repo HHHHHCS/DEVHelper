@@ -1,17 +1,25 @@
-add_library(link_manager
-    link_manager.cpp
-    link_manager.h
+set(LINK_LIB
     link_interface/link.h
     link_interface/serial_link.cpp
     link_interface/serial_link.h
-    proto_interface/proto.cpp
+)
+
+set(PROTO_LIB
     proto_interface/proto.h
+)
+
+add_library(link_manager
+    link_manager.cpp
+    link_manager.h
+    ${LINK_LIB}
+    ${PROTO_LIB}
 )
 
 target_link_libraries(link_manager
 INTERFACE
-    serial_lib
-    tasks_lib
+    tasks
+    q_serial
+    ymodem
 PRIVATE
     managers
 )

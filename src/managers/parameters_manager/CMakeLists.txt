@@ -5,7 +5,7 @@ add_library(parameters_manager
 
 target_link_libraries(parameters_manager
 INTERFACE
-    tasks_lib
+    tasks
 PRIVATE
     managers
 )
