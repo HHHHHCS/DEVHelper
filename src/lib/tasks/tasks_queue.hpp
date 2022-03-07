@@ -48,12 +48,12 @@ namespace tasks
                 removeAllTasks();
 
                 _q_sch_thread_startup_flag = false;
+                while(_q_sch_thread_startup_flag);
+
                 if(_q_sch_thread->joinable())
                 {
                     _q_sch_thread->join();
                 }
-
-                _q_sch_thread = nullptr;
             }
 
             SharedPtrTask operator[](const uint8_t prio)
@@ -173,9 +173,14 @@ namespace tasks
 
             void removeAllTasks()
             {
-                for(auto &item : _q_list)
+                if(_q_list.empty())
                 {
-                    removeTaskListElem(item);
+                    return;
+                }
+
+                for(auto i = 0; i < _q_list.size(); ++i)
+                {
+                    _q_list.pop_front();
                 }
             }
 
@@ -210,7 +215,7 @@ namespace tasks
             {
                 _q_sch_thread_startup_flag = true;
 
-                _q_sch_thread = new std::thread([this] ()
+                _q_sch_thread = std::make_unique<std::thread>([this] ()
                 {
                     while(_q_sch_thread_startup_flag)
                     {
@@ -288,7 +293,7 @@ namespace tasks
             using TaskPtrListIterator = TaskPtrList::iterator;
 
         private:
-            std::string _q_name;
+            const std::string _q_name;
             const uint32_t _q_max_size;
 
             TaskPtrList _q_list;
@@ -298,10 +303,15 @@ namespace tasks
             std::mutex _q_mutex;
             std::atomic_bool _q_sch_thread_startup_flag;
             std::atomic_uint8_t _q_running_tasks_meanwhile_counts;
-            std::thread* _q_sch_thread;
+            std::unique_ptr<std::thread> _q_sch_thread;
 
             void removeTaskListElem(const SharedPtrTask &elem)
             {
+                if(elem == nullptr)
+                {
+                    return;
+                }
+
                 if(elem->getState() == TaskStateType::RUNNING)
                 {
                     elem->terminate();
@@ -309,18 +319,13 @@ namespace tasks
 
                 lock_guard lock(_q_mutex);
                 // 查询指针引用计数
-                WeakPtrTask wp_task = elem;
+                WeakPtrTask wp_task(elem);
                 if(!wp_task.expired())
                 {
-                    // TODO(huangchsh): 需要验证此方法可行性
-                    for(auto i = 0; i < wp_task.use_count(); ++i)
+                    if(wp_task.use_count() < 2)
                     {
                         _q_list.remove(elem);
                     }
-                }
-                else
-                {
-                    _q_list.remove(elem);
                 }
             }
 

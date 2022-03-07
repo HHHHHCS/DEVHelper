@@ -112,7 +112,7 @@ void LinkManager::createChoiceLink(const QString name)
         tasks::SharedPtrTasksQueue p_link_task_queue = std::make_shared<tasks::TasksQueue>(name.toStdString() + "_q_1");
         link_task_q_list.append(p_link_task_queue);
 
-        tasks::Task task(p_link_task_queue->getName() + "heartbeat", p_link_task_queue->getName() , 0., [&, this]()
+        tasks::Task task(p_link_task_queue->getName() + "heartbeat", p_link_task_queue->getName() , 0., [this]()
         {
             // TODO(huangchsh): 发送心跳协议
             // TODO(huangchsh): 等待设备响应
