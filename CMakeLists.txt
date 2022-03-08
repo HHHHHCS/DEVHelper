@@ -4,8 +4,8 @@ project(DEVHelper)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 set(CMAKE_C_STANDARD 17)
@@ -24,6 +24,10 @@ set(BOOST_INCLUDEDIR "F:/DataBank/source_code/boost/boost/include/boost-1_78/boo
 set(BOOST_LIBRARYDIR "F:/DataBank/source_code/boost/boost/lib") # "D:/source_code/boost/lib")
 set(Boost_NO_SYSTEM_PATHS ON)
 
+set(QT_RESOURCES
+  ${CMAKE_CURRENT_SOURCE_DIR}/ui/Resources/qml.qrc
+)
+
 find_package(Qt5
 REQUIRED COMPONENTS
   Core
@@ -39,24 +43,13 @@ REQUIRED COMPONENTS
   system
 )
 
-set(RESOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/ui/Resources/qml.qrc
-)
-
 add_subdirectory(src)
-# add_subdirectory(ui)
 
 add_executable(${PROJECT_NAME}
-  ${RESOURCES}
-)
-
-target_compile_definitions(${PROJECT_NAME}
-PRIVATE
-  $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
+  ${QT_RESOURCES}
 )
 
 target_link_libraries(${PROJECT_NAME}
 PRIVATE
   dev_helper_src
-  # ui_lib
 )

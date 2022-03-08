@@ -1,0 +1,3 @@
+[submodule "src/lib/protos/devlink2"]
+	path = src/lib/protos/devlink2
+	url = https://gitlab.xyitech.com/antwork/EmbeddedSoftware/devlink2.git
