@@ -1,2 +1,2 @@
 add_subdirectory(updater)
-# add_subdirectory(devlink2)
+add_subdirectory(devlink2)
