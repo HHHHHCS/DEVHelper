@@ -42,7 +42,7 @@ Item
 
     MessageDialog
     {
-        id: recover_factory
+        id: factory
         visible: false
         modality: Qt.WindowModal
         title: qsTr("提示")
@@ -187,7 +187,7 @@ Item
                 {
                     id: upload_button
 
-                    text: qsTr("上传")
+                    text: qsTr("刷写")
 
                     onClicked:
                     {
@@ -199,26 +199,19 @@ Item
                 {
                     id: update_button
 
-                    text: qsTr("更新")
+                    text: qsTr("上传")
                 }
 
                 Button
                 {
-                    id: recover_factory_button
+                    id: factory_button
 
-                    text: qsTr("恢复出厂")
+                    text: qsTr("出厂")
 
                     onClicked:
                     {
-                        recover_factory.open()
+                        factory.open()
                     }
-                }
-
-                Button
-                {
-                    id: first_factory_button
-
-                    text: qsTr("初次出厂")
                 }
 
                 Button

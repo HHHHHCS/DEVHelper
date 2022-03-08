@@ -79,12 +79,19 @@ namespace tasks
             virtual ~Task()
             {
                 _work_thread_startup_flag = false;
-                if(_work_thread->joinable())
+                while(_work_thread_startup_flag)
                 {
-                    _work_thread->join();
+                    ;
                 }
 
-                _work_thread = nullptr;
+                if(_work_thread)
+                {
+                    if(_work_thread->joinable())
+                    {
+                        _work_thread->join();
+                    }
+                }
+
                 _task_func = nullptr;
             }
 
@@ -126,7 +133,7 @@ namespace tasks
 
             std::atomic_bool _work_thread_startup_flag;
             TaskFunc _task_func;
-            std::thread* _work_thread;
+            std::unique_ptr<std::thread> _work_thread;
 
             void setPriority(const uint8_t prio) { _priority = prio; }
             void setState(const TaskStateType state) { _state = state; }
@@ -186,7 +193,7 @@ namespace tasks
                     return;
                 }
 
-                _work_thread = new std::thread([this]()
+                _work_thread = std::make_unique<std::thread>([this]()
                 {
                     _work_thread_startup_flag = true;
                     while(_work_thread_startup_flag
