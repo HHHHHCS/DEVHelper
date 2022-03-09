@@ -4,7 +4,6 @@ add_library(link_manager
     link_interface/link.h
     link_interface/serial_link.cpp
     link_interface/serial_link.h
-    proto_interface/proto.cpp
     proto_interface/proto.h
 )
 
