@@ -2,9 +2,12 @@ set(LINK_LIB
     link_interface/link.h
     link_interface/serial_link.cpp
     link_interface/serial_link.h
+<<<<<<< HEAD
 )
 
 set(PROTO_LIB
+=======
+>>>>>>> 501252ed713a16cd6d49f0f418f00a1771d803e0
     proto_interface/proto.h
 )
 
