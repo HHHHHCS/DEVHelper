@@ -17,13 +17,41 @@ namespace communication
         friend class managers::LinkManager;
 
         signals:
+            /**
+             * @brief 握手完成信号
+             */
             void sigShakehand();
+
+            /**
+             * @brief 终止信号
+             */
             void sigBreakdown();
+
+            /**
+             * @brief 协议解析信号
+             * @param[in] 协议接口
+             * @param[in] 需要进行解析的数据
+             */
             void sigParsed(Proto*, QByteArray&);
+
+            /**
+             * @brief 协议封装信号
+             * @param[in] 协议接口
+             * @param[in] 需要进行解析的数据
+             */
             void sigPacked(Proto*, QByteArray&);
 
         private slots:
+            /**
+             * @brief 协议解析槽
+             * @note 在槽内完成协议解析并进行其他处理
+             */
             virtual void slotParseProto(const QByteArray&) = 0;
+
+            /**
+             * @brief 协议封装槽
+             * @note 在槽内完成协议封装并进行其他处理，最后转发至通信端口
+             */
             virtual void slotPackProto(const QByteArray&) = 0;
 
         public:
@@ -31,28 +59,30 @@ namespace communication
             {
                 UNKNOWN_TYPE = -1,
                 MAVLINK,
+                DEVLINK2,
                 // TODO(huangchsh): 后续协议类型在此添加
             };
 
         public:
             virtual ~Proto() = default;
 
-            virtual void setProtoName(const QString name) = 0;
-            virtual QString getProtoName() const = 0;
-
         protected:
-            Proto(ProtoType proto_type)
+            Proto(const ProtoType& proto_type, const QString& proto_name)
                 : QThread(nullptr)
                 , m_proto_type(proto_type)
+                , m_proto_name(proto_name)
             {
                 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
                 qRegisterMetaType<Proto*>("communication::Proto");
             }
 
-            ProtoType getLinkType() const { return m_proto_type; }
+            QString getProtoName() const noexcept { return m_proto_name; };
+
+            ProtoType getLinkType() const noexcept { return m_proto_type; }
 
         private:
             const ProtoType m_proto_type;
+            const QString m_proto_name;
     };
     using UniquePtrProto = std::unique_ptr<Proto>;
     using SharedPtrProto = std::shared_ptr<Proto>;
