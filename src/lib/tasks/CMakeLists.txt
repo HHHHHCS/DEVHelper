@@ -1,4 +1,4 @@
-add_library(tasks
+add_library(tasks STATIC
     task.hpp
     tasks_queue.hpp
 )

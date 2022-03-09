@@ -6,7 +6,7 @@ include_directories(
 add_subdirectory(lib)
 add_subdirectory(managers)
 
-add_library(dev_helper_src
+add_library(dev_helper_src STATIC
     dev_helper_application.cpp
     dev_helper_application.h
     main.cpp

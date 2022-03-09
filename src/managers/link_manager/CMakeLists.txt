@@ -2,7 +2,9 @@ set(LINK_LIB
     link_interface/link.h
     link_interface/serial_link.cpp
     link_interface/serial_link.h
+)
 
+set(PROTO_LIB
     proto_interface/proto.h
     proto_interface/devlink2_proto.cpp
     proto_interface/devlink2_proto.h

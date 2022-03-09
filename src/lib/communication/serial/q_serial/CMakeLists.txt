@@ -5,7 +5,7 @@ REQUIRED COMPONENTS
   SerialPort
 )
 
-add_library(q_serial
+add_library(q_serial STATIC
     q_serial.cpp
     q_serial.h
 )

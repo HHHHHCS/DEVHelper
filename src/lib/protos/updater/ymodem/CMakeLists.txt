@@ -1,4 +1,4 @@
-add_library(ymodem
+add_library(ymodem STATIC
     ymodem.c
     ymodem.h
 )
