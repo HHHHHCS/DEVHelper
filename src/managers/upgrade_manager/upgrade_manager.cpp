@@ -50,7 +50,7 @@ void UpgradeManager::flash(const QVariant& file_name)
  */
 void UpgradeManager::factory()
 {
-
+    // TODO(huangchsh): 发送恢复出厂通知
 }
 
 /**

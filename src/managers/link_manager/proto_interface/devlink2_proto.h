@@ -14,6 +14,12 @@ namespace communication
     {
         Q_OBJECT
 
+        public:
+            /**
+             * @brief 触发恢复出厂成功信号
+             */
+            void sigRestoreFactorySucceed();
+
         private slots:
             /**
              * @brief 协议解析槽

@@ -14,25 +14,61 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
     {
         if(Devlink2::DEV_SUCCESS == m_proto_ptr->initDevlink())
         {
-            m_proto_ptr->registerMsgHandle(AWLINK_MSG_ID_DEV_HEARTBEAT, [this](const char* msg)
+            if(m_proto_ptr->registerMsgHandle(AWLINK_MSG_ID_DEV_HEARTBEAT, [this](const char* msg)
             {
+                if(!msg)
+                {
+                    return;
+                }
                 // TODO(huangchsh): 消息转发
-            });
+                awlink_dev_heartbeat_t hb{0};
+                memcpy(&hb, msg, sizeof(awlink_dev_heartbeat_t));
+            }))
+            {
+                return;
+            }
 
-            m_proto_ptr->registerMsgHandle(AWLINK_MSG_ID_QUERY_OR_MODIFY_DEV_PARAMS_ACK, [this](const char* msg)
+            if(m_proto_ptr->registerMsgHandle(AWLINK_MSG_ID_QUERY_OR_MODIFY_DEV_PARAMS_ACK, [this](const char* msg)
             {
+                if(!msg)
+                {
+                    return;
+                }
                 // TODO(huangchsh): 消息转发
-            });
+                awlink_query_or_modify_dev_params_ack_t ack{0};
+                memcpy(&ack, msg, sizeof(awlink_query_or_modify_dev_params_ack_t));
+            }))
+            {
+                return;
+            }
 
-            m_proto_ptr->registerMsgHandle(AWLINK_MSG_ID_RESTORE_FACTORY_ACK, [this](const char* msg)
+            if(m_proto_ptr->registerMsgHandle(AWLINK_MSG_ID_RESTORE_FACTORY_ACK, [this](const char* msg)
             {
+                if(!msg)
+                {
+                    return;
+                }
                 // TODO(huangchsh): 消息转发
-            });
+                awlink_restore_factory_ack_t ack{0};
+                memcpy(&ack, msg, sizeof(awlink_restore_factory_ack_t));
+            }))
+            {
+                return;
+            }
 
-            m_proto_ptr->registerMsgHandle(AWLINK_MSG_ID_UPDATE_FIRMWARE_ACK, [this](const char* msg)
+            if(m_proto_ptr->registerMsgHandle(AWLINK_MSG_ID_UPDATE_FIRMWARE_ACK, [this](const char* msg)
             {
+                if(!msg)
+                {
+                    return;
+                }
                 // TODO(huangchsh): 消息转发
-            });
+                awlink_update_firmware_ack_t ack{0};
+                memcpy(&ack, msg, sizeof(awlink_update_firmware_ack_t));
+            }))
+            {
+                return;
+            }
         }
     }
 }

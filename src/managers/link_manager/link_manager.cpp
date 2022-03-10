@@ -12,7 +12,10 @@ using namespace managers;
 
 LinkManager::LinkManager(QApplication *app, ManagerCollection* man_collect)
     : Manager(app, man_collect)
+    , m_p_serial_scan_thread_ptr(nullptr)
     , m_serial_scan_thread_stop_flag(false)
+    , m_link_info_map{}
+    , m_links_map{}
 {
 }
 
@@ -20,13 +23,12 @@ LinkManager::~LinkManager()
 {
     m_serial_scan_thread_stop_flag = true;
     // 回收检测端口线程资源
-    if(m_p_serial_scan_thread)
+    if(m_p_serial_scan_thread_ptr)
     {
-        if(m_p_serial_scan_thread->joinable())
+        if(m_p_serial_scan_thread_ptr->joinable())
         {
-            m_p_serial_scan_thread->join();
+            m_p_serial_scan_thread_ptr->join();
         }
-        m_p_serial_scan_thread = nullptr;
     }
 
     disconnectAll();
@@ -40,7 +42,7 @@ LinkManager::~LinkManager()
 void LinkManager::createScanLinksListWork()
 {
     // 1. 创建可连接USB或串口端口的搜索线程
-    m_p_serial_scan_thread = new std::thread([this]()
+    m_p_serial_scan_thread_ptr = std::make_unique<std::thread>([this]()
     {
         QList<port_lib::PortInfoStru> links_list;
         while(!m_serial_scan_thread_stop_flag)
@@ -51,16 +53,17 @@ void LinkManager::createScanLinksListWork()
             {
                 for(auto &iter : links_list)
                 {
-                    // for(auto link_dev_name : LINK_DEV_NAME_LIST)
-                    // {
-                    //     if(iter.description.toLower().contains(iter.name))
-                    //     {
-                    //         m_port_name_list.append(iter.name);
-                    //     }
-                    // }
+                    for(auto &link_dev_name : LINK_DEV_NAME_LIST)
+                    {
+                        // TODO(huangchsh): 由于驱动环境原因，此处用序列号进行识别，后期进行优化
+                        if(iter.serial_number.toLower().contains(link_dev_name))
+                        {
+                            m_link_info_map.insert(iter.name, iter.description);
+                        }
+                    }
 
                     // NOTE(huangchsh): 调试代码
-                    m_link_info_map.insert(iter.name, iter.description);
+                    // m_link_info_map.insert(iter.name, iter.description);
                 }
 
                 // TODO(huangchsh): 需要对设备通过类型进行区分及显示
@@ -75,9 +78,9 @@ void LinkManager::createScanLinksListWork()
         }
     });
 
-    // TODO(huangchsh): 创建可连接TCP或UDP搜索线程
+    // TODO(huangchsh): 2.创建可连接TCP或UDP搜索线程
 
-    // TODO(huangchsh): 创建其他可连接搜索线程
+    // TODO(huangchsh): 3.创建其他可连接搜索线程
 }
 
 /**
@@ -88,12 +91,30 @@ void LinkManager::createScanLinksListWork()
  */
 void LinkManager::createChoiceLink(const QString name)
 {
-    // TODO(huangchsh): 同名连接检测
-    // TODO(huangchsh): 暂时只先实现串口类型，其余类型后续添加
-    communication::SharedPtrLink p_create_link = std::make_shared<communication::SerialLink>(name, 921600);
-    if(!p_create_link)
+    if(name.isEmpty())
     {
         return;
+    }
+
+    // 同名连接检测
+    if(getSharedPtrLinkByName(name) != nullptr)
+    {
+        return;
+    }
+
+    communication::SharedPtrLink p_create_link;
+    // USB-串口
+    if(name.contains("COM"))
+    {
+        p_create_link = std::make_shared<communication::SerialLink>(name, 115200);
+        if(!p_create_link)
+        {
+            return;
+        }
+    }
+    else
+    {
+        ;
     }
 
     // TODO(huangchsh): 通信错误信号
@@ -109,15 +130,22 @@ void LinkManager::createChoiceLink(const QString name)
         // 连接成功后，创建任务队列，插入map
         // TODO(huangchsh): 通过index支持多条队列
         QList<tasks::SharedPtrTasksQueue> link_task_q_list;
-        tasks::SharedPtrTasksQueue p_link_task_queue = std::make_shared<tasks::TasksQueue>(name.toStdString() + "_q_1");
+        tasks::SharedPtrTasksQueue p_link_task_queue = std::make_shared<tasks::TasksQueue>(name.toStdString() + "_q_" + std::to_string(m_links_map[p_create_link].size()));
         link_task_q_list.append(p_link_task_queue);
 
-        tasks::Task task(p_link_task_queue->getName() + "heartbeat", p_link_task_queue->getName() , 0., [this]()
+        tasks::Task task(p_link_task_queue->getName() + "heartbeat", p_link_task_queue->getName() , 0., [&, this]()
         {
-            // TODO(huangchsh): 发送心跳协议
-            // TODO(huangchsh): 等待设备响应
-            // TODO(huangchsh): 更新连接及选项卡状态
-            // emit sigUpdataLinkStatus(status);
+            QByteArray arr(10, 'a');
+            communication::SharedPtrLink tmp_link = p_create_link;
+            for(;;)
+            {
+                tmp_link->writeBytes(arr);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+                // TODO(huangchsh): 发送心跳协议
+                // TODO(huangchsh): 等待设备响应
+                // TODO(huangchsh): 更新连接及选项卡状态
+                // emit sigUpdateLinkStatus(status);
+            }
         });
         bool result = p_link_task_queue->addFastTask(task);
         if(result)
@@ -149,8 +177,7 @@ void LinkManager::createChoiceLink(const QString name)
 void LinkManager::removeChoiceLink(const QString name)
 {
     communication::SharedPtrLink p_link = getSharedPtrLinkByName(name);
-    if(p_link
-    && p_link.get())
+    if(p_link)
     {
         p_link->disconnect();
         qDebug("%s disconnected", p_link->getPortName().toStdString().data());

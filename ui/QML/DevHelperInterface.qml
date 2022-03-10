@@ -17,6 +17,18 @@ Item
     property string link_name
     property string link_description
 
+
+    Connections
+    {
+        target: upgrade_manager_obj
+
+        onSigDoFactoryFinished:
+        {
+            // TODO(huangchsh): 恢复出厂完成时，需要提示成功，可用弹窗或显示字符串
+        }
+    }
+
+
     FileDialog
     {
         id: firmwareChoosenDialog
@@ -54,8 +66,9 @@ Item
         standardButtons: StandardButton.Yes | StandardButton.No
         onYes:
         {
-            // TODO(huangchsh): 将恢复出厂信号传出
-            console.log("Recovery factory firmware and configure which about it.")
+            console.log("Restore factory firmware and configure which about it.")
+
+            upgrade_manager_obj.factory()
         }
     }
 

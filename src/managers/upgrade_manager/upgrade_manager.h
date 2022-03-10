@@ -13,6 +13,12 @@ namespace managers
     {
         Q_OBJECT
 
+        signals:
+            /**
+             * @brief 出厂操作执行完成
+             */
+            void sigDoFactoryFinished();
+
         public:
             /**
              * @brief 上传函数

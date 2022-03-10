@@ -10,8 +10,9 @@
 
 #include "tasks_queue.hpp"
 
-#include "manager_collection.h"
 #include "serial_link.h"
+
+#include "manager_collection.h"
 
 
 namespace managers
@@ -40,7 +41,7 @@ namespace managers
              * @note 对应处理于ScanLinksListInterface.qml中
              * @note 连接状态变化时发出
              */
-            void sigUpdataLinkStatus(const QVariant status);
+            void sigUpdateLinkStatus(const QVariant status);
 
         private slots:
             /**
@@ -108,7 +109,7 @@ namespace managers
         private:
             static constexpr char *LINK_DEV_NAME_LIST[] = {"rc", "rn", "rp", "ba", "uav"};   // 可选设备列表
 
-            std::thread *m_p_serial_scan_thread;
+            std::unique_ptr<std::thread> m_p_serial_scan_thread_ptr;
             std::atomic_bool m_serial_scan_thread_stop_flag;
 
             QVariantMap m_link_info_map;   // 可连接端口名列表
