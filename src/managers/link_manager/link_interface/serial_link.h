@@ -51,9 +51,6 @@ namespace communication
 
             static QList<port_lib::PortInfoStru> findPortsListForward();
 
-        protected:
-            void connectionRemoved();
-
         private:
             using UniquePtrSerialPort = std::unique_ptr<port_lib::SerialPort>;
 

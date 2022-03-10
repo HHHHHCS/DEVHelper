@@ -32,6 +32,7 @@ namespace port_lib
         QString manufacturer;
         QString serial_number;
     };
+    QList<PortInfoStru> findPortsList();
     // TODO(huangchsh): __WEAK 抽象为接口
 
     class SerialPort : public QSerialPort
@@ -45,28 +46,24 @@ namespace port_lib
             using QSerialPortError = SerialPortError;
 
         public:
-            explicit SerialPort() = default;
             explicit SerialPort(const QString &port_name,
                                 qint32 baud_rate = 115200,
                                 QDataBits data_bits = QDataBits::Data8,
                                 QParity parity = QParity::NoParity,
                                 QStopBits stop_bits = QStopBits::OneStop,
                                 QFlowControl flow_control = QFlowControl::NoFlowControl);
-            explicit SerialPort(const QString &port_name, qint32 baud_rate = 115200);
-            explicit SerialPort(const QString &port_name);
-            ~SerialPort();
+            ~SerialPort() override = default;
+            SerialPort(const SerialPort&) = delete;
+            SerialPort(const SerialPort&&) = delete;
+            SerialPort& operator=(const SerialPort&) = delete;
+            SerialPort& operator=(const SerialPort&&) = delete;
 
             bool openPort();
             void closePort();
             qint64 readPort(QByteArray &buffer);
             qint64 writePort(const QByteArray &buffer);
 
-            static QList<PortInfoStru> findPortsList();
-
         private:
-            SerialPort(const SerialPort&);
-            SerialPort& operator=(const SerialPort&);
-
             QMutex m_write_mutex;
             QMutex m_read_mutex;
     };

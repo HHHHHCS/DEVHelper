@@ -22,7 +22,7 @@ SerialLink::SerialLink(const QString &port_name,
     Q_CHECK_PTR(m_port_ptr);
 
     QObject::connect(m_port_ptr.get(), static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error), this, &SerialLink::linkError);
-    QObject::connect(m_port_ptr.get(), &QIODevice::readyRead, this, &SerialLink::readBytes);
+    QObject::connect(m_port_ptr.get(), &QSerialPort::readyRead, this, &SerialLink::readBytes);
 }
 
 SerialLink::~SerialLink()
@@ -113,5 +113,5 @@ void SerialLink::linkError(SerialPort::QSerialPortError error)
 
 QList<port_lib::PortInfoStru> SerialLink::findPortsListForward()
 {
-    return SerialPort::findPortsList();
+    return port_lib::findPortsList();
 }

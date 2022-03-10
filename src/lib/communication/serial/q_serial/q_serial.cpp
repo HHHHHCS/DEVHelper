@@ -27,19 +27,6 @@ SerialPort::SerialPort(const QString &port_name,
     this->setFlowControl(flow_control);
 }
 
-SerialPort::SerialPort(const QString &port_name)
-    : QSerialPort()
-{
-    this->setPortName(port_name);
-}
-
-SerialPort::SerialPort(const QString &port_name, qint32 baud_rate /* = 115200  */)
-    : QSerialPort()
-{
-    this->setPortName(port_name);
-    this->setBaudRate(baud_rate);
-}
-
 SerialPort::~SerialPort()
 {
     closePort();
@@ -109,40 +96,37 @@ qint64 SerialPort::writePort(const QByteArray &buffer)
 
     QMutexLocker locker(&m_write_mutex);
     auto send_counts = this->write(buffer);
+    while(!this->waitForBytesWritten(1000));
     // qDebug() << "Send bytes:" << buffer;
 
     return send_counts;
 }
 
-QList<PortInfoStru> SerialPort::findPortsList()
+QList<port_lib::PortInfoStru> port_lib::findPortsList()
 {
     QList<PortInfoStru> ports_name_list;
 
-    const auto list = QSerialPortInfo::availablePorts();
-    if(!list.empty())
+    foreach(const auto& info, QSerialPortInfo::availablePorts())
     {
-        for(auto &info : list)
+        PortInfoStru port_info_stru;
+
+        port_info_stru.name = info.portName();
+        port_info_stru.system_location = info.systemLocation();
+        port_info_stru.description = info.description();
+        port_info_stru.manufacturer = info.manufacturer();
+        port_info_stru.serial_number = info.serialNumber();
+
+        if(info.hasVendorIdentifier())
         {
-            PortInfoStru port_info_stru;
-
-            port_info_stru.name = info.portName();
-            port_info_stru.system_location = info.systemLocation();
-            port_info_stru.description = info.description();
-            port_info_stru.manufacturer = info.manufacturer();
-            port_info_stru.serial_number = info.serialNumber();
-
-            if(info.hasVendorIdentifier())
-            {
-                port_info_stru.vendor_identifier = info.vendorIdentifier();
-            }
-
-            if(info.hasProductIdentifier())
-            {
-                port_info_stru.product_identifier = info.productIdentifier();
-            }
-
-            ports_name_list.append(port_info_stru);
+            port_info_stru.vendor_identifier = info.vendorIdentifier();
         }
+
+        if(info.hasProductIdentifier())
+        {
+            port_info_stru.product_identifier = info.productIdentifier();
+        }
+
+        ports_name_list.append(port_info_stru);
     }
 
     return ports_name_list;
