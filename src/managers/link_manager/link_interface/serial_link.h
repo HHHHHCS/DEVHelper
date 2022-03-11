@@ -13,11 +13,11 @@ namespace communication
         Q_OBJECT
 
         public slots:
-            void linkError(port_lib::SerialPort::QSerialPortError error);
+            void slotLinkError(port_lib::SerialPort::QSerialPortError error);
 
         private slots:
-            void writeBytes(const QByteArray &data) override;
-            void readBytes();
+            void slotWriteBytes(const QByteArray &data) override;
+            void slotReadBytes();
 
         public:
             Q_PROPERTY(qint32       baudrate             READ getBaudrate            CONSTANT);

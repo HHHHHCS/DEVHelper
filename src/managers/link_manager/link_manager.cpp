@@ -119,12 +119,10 @@ void LinkManager::createChoiceLink(const QString name)
     }
 
     // TODO(huangchsh): 通信错误信号
-    // connect(p_create_link->get(), &communication::Link::commError, , );
-    // TODO(huangchsh): 读取信号
-    // connect(p_create_link->get(), &communication::Link::bytesReceived, , );
-    // TODO(huangchsh): 写入信号
-    // connect(p_create_link->get(), &communication::Link::bytesSent, , );
-    connect(p_create_link.get(), &communication::Link::disconnected, this, &LinkManager::slotsLinkDisconnected);
+    connect(p_create_link->get(), &communication::Link::sigCommError, this, &LinkManager::slotLinkCommError);
+    connect(p_create_link->get(), &communication::Link::sigBytesReceived, this, &LinkManager::slotLinkBytesReceived);
+    connect(p_create_link->get(), &communication::Link::sigBytesSent, this, &LinkManager::slotLinkBytesSent);
+    connect(p_create_link.get(), &communication::Link::sigDisconnected, this, &LinkManager::slotLinkDisconnected);
 
     if(p_create_link->connect())
     {
@@ -196,10 +194,37 @@ void LinkManager::disconnectAll()
 }
 
 /**
- * @brief 连接断开槽
- * @note 对应信号 communication::Link::disconnected
+ * @brief 通信错误槽
+ * @note 对应信号 communication::Link::sigCommError
  */
-void LinkManager::slotsLinkDisconnected()
+void LinkManager::slotLinkCommError(const QString& link_name, const QString& link_error)
+{
+    // TODO(huangchsh): 后续进行处理
+}
+
+/**
+ * @brief 数据写入应答槽
+ * @note 对应信号 communication::Link::sigBytesSent
+ */
+void LinkManager::slotLinkBytesSent(communication::Link* link, const qint64 sent_size)
+{
+    // TODO(huangchsh): 后续进行处理
+}
+
+/**
+ * @brief 数据读取应答槽
+ * @note 对应信号 communication::Link::sigBytesReceived
+ */
+void LinkManager::slotLinkBytesReceived(communication::Link* link, QByteArray& read_bytes)
+{
+    // TODO(huangchsh): 转发给协议处理线程
+}
+
+/**
+ * @brief 连接断开槽
+ * @note 对应信号 communication::Link::sigDisconnected
+ */
+void LinkManager::slotLinkDisconnected()
 {
     communication::Link* link = qobject_cast<communication::Link*>(sender());
     if(!link)
@@ -207,13 +232,10 @@ void LinkManager::slotsLinkDisconnected()
         return;
     }
 
-    // TODO(huangchsh): 断连通信错误信号
-    // disconnect(link, &communication::Link::commError, , );
-    // TODO(huangchsh): 断连读取信号
-    // disconnect(link, &communication::Link::bytesReceived, , );
-    // TODO(huangchsh): 断连写入信号
-    // disconnect(link, &communication::Link::bytesSent, , );
-    disconnect(link, &communication::Link::disconnected, this, &LinkManager::slotsLinkDisconnected);
+    disconnect(link, &communication::Link::sigCommError, this, &LinkManager::slotLinkCommError);
+    disconnect(link, &communication::Link::sigBytesReceived, this, &LinkManager::slotLinkBytesReceived);
+    disconnect(link, &communication::Link::sigBytesSent, this, &LinkManager::slotLinkBytesSent);
+    disconnect(link, &communication::Link::sigDisconnected, this, &LinkManager::slotLinkDisconnected);
 
     searchLinkToDo([&link, this](communication::SharedPtrLink link_shptr)
     {

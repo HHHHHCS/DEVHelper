@@ -19,14 +19,14 @@ namespace communication
         friend class managers::LinkManager;
 
         signals:
-            void connected();
-            void disconnected();
-            void bytesReceived(Link*, QByteArray&);
-            void bytesSent(Link*, const QByteArray&);
-            void commError(const QString&, const QString&);
+            void sigConnected();
+            void sigDisconnected();
+            void sigBytesReceived(Link*, QByteArray&);
+            void sigBytesSent(Link*, const qint64);
+            void sigCommError(const QString&, const QString&);
 
         private slots:
-            virtual void writeBytes(const QByteArray&) = 0;
+            virtual void slotWriteBytes(const QByteArray&) = 0;
 
         public:
             Q_INVOKABLE virtual void disconnect() = 0;

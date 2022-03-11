@@ -45,10 +45,32 @@ namespace managers
 
         private slots:
             /**
-             * @brief 连接断开槽
-             * @note 对应信号 communication::Link::disconnected
+             * @brief 通信错误槽
+             * @note 对应信号 communication::Link::sigCommError
+             * @param[in] link_name 出现异常的连接名
+             * @param[in] link_error 出现的具体异常
              */
-            void slotsLinkDisconnected();
+            void slotLinkCommError(const QString& link_name, const QString& link_error);
+
+            /**
+             * @brief 数据写入应答槽
+             * @note 对应信号 communication::Link::sigBytesSent
+             * @param[in] link 进行数据写入的连接
+             * @param[in] bytes
+             */
+            void slotLinkBytesSent(communication::Link* link, const qint64 sent_size);
+
+            /**
+             * @brief 数据读取应答槽
+             * @note 对应信号 communication::Link::sigBytesReceived
+             */
+            void slotLinkBytesReceived(communication::Link* link, QByteArray& read_bytes);
+
+            /**
+             * @brief 连接断开槽
+             * @note 对应信号 communication::Link::sigDisconnected
+             */
+            void slotLinkDisconnected();
 
         public:
             /**

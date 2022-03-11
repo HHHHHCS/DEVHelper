@@ -21,8 +21,8 @@ SerialLink::SerialLink(const QString &port_name,
                             (SerialPort::QFlowControl)flow_control);
     Q_CHECK_PTR(m_port_ptr);
 
-    QObject::connect(m_port_ptr.get(), static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error), this, &SerialLink::linkError);
-    QObject::connect(m_port_ptr.get(), &QSerialPort::readyRead, this, &SerialLink::readBytes);
+    QObject::connect(m_port_ptr.get(), static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error), this, &SerialLink::slotLinkError);
+    QObject::connect(m_port_ptr.get(), &QSerialPort::readyRead, this, &SerialLink::slotReadBytes);
 }
 
 SerialLink::~SerialLink()
@@ -33,18 +33,21 @@ SerialLink::~SerialLink()
     }
 }
 
-void SerialLink::writeBytes(const QByteArray &data)
+void SerialLink::slotWriteBytes(const QByteArray &data)
 {
     if(!m_port_ptr)
     {
         return;
     }
 
-    emit bytesSent(this, data);
-    m_port_ptr->writePort(data);
+    qint64 sent_size = 0;
+    if(0 < (sent_size = m_port_ptr->writePort(data)))
+    {
+        emit sigBytesSent(this, sent_size);
+    }
 }
 
-void SerialLink::readBytes()
+void SerialLink::slotReadBytes()
 {
     if(!m_port_ptr)
     {
@@ -52,9 +55,10 @@ void SerialLink::readBytes()
     }
 
     QByteArray data;
-    m_port_ptr->readPort(data);
-
-    emit bytesReceived(this, data);
+    if(0 < m_port_ptr->readPort(data))
+    {
+        emit sigBytesReceived(this, data);
+    }
 }
 
 bool SerialLink::connect()
@@ -67,10 +71,10 @@ bool SerialLink::connect()
     if(m_port_ptr->openPort())
     {
         qDebug("Succeed to set port ");
+
+        emit sigConnected();
         return true;
     }
-
-    emit connected();
 
     return false;
 }
@@ -84,10 +88,10 @@ void SerialLink::disconnect()
 
     m_port_ptr->closePort();
 
-    emit disconnected();
+    emit sigDisconnected();
 }
 
-void SerialLink::linkError(SerialPort::QSerialPortError error)
+void SerialLink::slotLinkError(SerialPort::QSerialPortError error)
 {
     switch (error)
     {
@@ -108,7 +112,7 @@ void SerialLink::linkError(SerialPort::QSerialPortError error)
         }
     }
 
-    emit commError(getPortName(), QString(error));
+    emit sigCommError(getPortName(), QString(error));
 }
 
 QList<port_lib::PortInfoStru> SerialLink::findPortsListForward()
