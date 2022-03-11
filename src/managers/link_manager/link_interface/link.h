@@ -32,7 +32,7 @@ namespace communication
             Q_INVOKABLE virtual void disconnect() = 0;
 
         public:
-            virtual ~Link() {};
+            virtual ~Link() override = default;
 
             virtual void setPortName(const QString name) = 0;
             virtual QString getPortName() const = 0;
@@ -48,13 +48,17 @@ namespace communication
             };
 
         protected:
-            Link(LinkType link_type)
+            explicit Link(LinkType link_type)
                 : QThread(nullptr)
                 , m_link_type(link_type)
             {
                 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
                 qRegisterMetaType<Link*>("communication::Link");
             }
+            Link(const Link&) = delete;
+            Link(const Link&&) = delete;
+            Link& operator=(const Link&) = delete;
+            Link& operator=(const Link&&) = delete;
 
             LinkType getLinkType() const { return m_link_type; }
 

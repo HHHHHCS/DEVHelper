@@ -8,18 +8,22 @@
 
 namespace managers
 {
-    class MainManager : public Manager
+    class MainManager final : public Manager
     {
         Q_OBJECT
 
         public:
-            MainManager(QApplication *app, ManagerCollection* man_collect);
-            ~MainManager();
+            explicit MainManager(QApplication *app, ManagerCollection* man_collect);
+            MainManager(const MainManager&) = delete;
+            MainManager(const MainManager&&) = delete;
+            MainManager& operator=(const MainManager&) = delete;
+            MainManager& operator=(const MainManager&&) = delete;
+            ~MainManager() final = default;
 
             /**
              * @brief 创建QML应用引擎
              */
-            QQmlApplicationEngine* createQMLAppEngine(QObject *parent = nullptr);
+            std::shared_ptr<QQmlApplicationEngine> createQMLAppEngine(QObject *parent = nullptr);
 
             /**
              * @brief 创建QML初始窗口
@@ -27,9 +31,6 @@ namespace managers
             void createMainWindow(QQmlApplicationEngine *qml_engine);
 
             // TODO(hunagchsh): 增加Image Provider
-
-        private:
-
     };
     // TODO(huangchsh): 实现总控件属性控制类
 }   // namespace managers

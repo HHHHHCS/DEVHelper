@@ -37,12 +37,12 @@ namespace communication
             void slotPackProto(uint32_t msg_id, const QByteArray& data) override;
 
         public:
-            Devlink2Proto(const QString& name, const awlink_channel_t chan);
-            ~Devlink2Proto() override = default;
+            explicit Devlink2Proto(const QString& name, const awlink_channel_t chan);
             Devlink2Proto(const Devlink2Proto&) = delete;
             Devlink2Proto(const Devlink2Proto&&) = delete;
             Devlink2Proto& operator=(const Devlink2Proto&) = delete;
             Devlink2Proto& operator=(const Devlink2Proto&&) = delete;
+            ~Devlink2Proto() override = default;
 
         private:
             using UniquePtrDevlink2 = std::unique_ptr<devconn::Devlink2>;

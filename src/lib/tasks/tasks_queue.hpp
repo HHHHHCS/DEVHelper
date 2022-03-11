@@ -50,9 +50,13 @@ namespace tasks
                 _q_sch_thread_startup_flag = false;
                 while(_q_sch_thread_startup_flag);
 
-                if(_q_sch_thread->joinable())
+                if(_q_sch_thread)
                 {
-                    _q_sch_thread->join();
+                    if(_q_sch_thread->joinable())
+                    {
+                        _q_sch_thread->join();
+                    }
+                    while(_q_sch_thread->joinable());
                 }
             }
 

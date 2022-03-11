@@ -17,7 +17,7 @@
 
 namespace managers
 {
-    class LinkManager : public Manager
+    class LinkManager final : public Manager
     {
         Q_OBJECT
 
@@ -77,8 +77,12 @@ namespace managers
             Q_ENUM(communication::Link::LinkType);
 
         public:
-            LinkManager(QApplication *app, ManagerCollection* man_collect);
-            ~LinkManager();
+            explicit LinkManager(QApplication *app, ManagerCollection* man_collect);
+            LinkManager(const LinkManager&) = delete;
+            LinkManager(const LinkManager&&) = delete;
+            LinkManager& operator=(const LinkManager&) = delete;
+            LinkManager&& operator=(const LinkManager&&) = delete;
+            ~LinkManager() final;
 
             QVariantMap getLinkInfoMap() const { return m_link_info_map; }
             int getLinkNum() const { return m_links_map.count(); }

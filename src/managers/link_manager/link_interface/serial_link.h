@@ -28,12 +28,16 @@ namespace communication
             Q_INVOKABLE void disconnect() override;
 
         public:
-            SerialLink(const QString &port_name,
+            explicit SerialLink(const QString &port_name,
                         qint32 baud_rate = 115200,
                         qint8 data_bits = 8,
                         qint8 parity = 0,
                         qint8 stop_bits = 1,
                         qint8 flow_control = 0);
+            SerialLink(const SerialLink&) = delete;
+            SerialLink(const SerialLink&&) = delete;
+            SerialLink& operator=(const SerialLink&) = delete;
+            SerialLink& operator=(const SerialLink&&) = delete;
             ~SerialLink() override;
 
             void setBaudrate(qint32 baud_rate) { if(m_port_ptr) { m_port_ptr->setBaudRate(baud_rate); } }

@@ -13,16 +13,19 @@ namespace dev_helper
 {
 namespace app
 {
-    class DevHelperApplication : public QApplication
+    class DevHelperApplication final : public QApplication
     {
         Q_OBJECT
 
         public:
-            explicit DevHelperApplication() = default;
-            DevHelperApplication(int &argc, char* argv[]);
-            ~DevHelperApplication();
+            explicit DevHelperApplication(int &argc, char* argv[]);
+            DevHelperApplication(const DevHelperApplication&) = delete;
+            DevHelperApplication(const DevHelperApplication&&) = delete;
+            DevHelperApplication& operator=(const DevHelperApplication&) = delete;
+            DevHelperApplication& operator=(const DevHelperApplication&&) = delete;
+            ~DevHelperApplication() final = default;
 
-            ::managers::ManagerCollection *man_collection() const { return m_p_man_collect; }
+            std::shared_ptr<::managers::ManagerCollection> man_collection() const { return m_p_man_collect; }
 
         public:
             void initCommonType();
@@ -31,8 +34,8 @@ namespace app
             void shutdown();
 
         private:
-            QQmlApplicationEngine *m_p_qml_app_engine;
-            ::managers::ManagerCollection *m_p_man_collect;
+            std::shared_ptr<QQmlApplicationEngine> m_p_qml_app_engine;
+            std::shared_ptr<::managers::ManagerCollection> m_p_man_collect;
 
             QObject* rootQmlObject();
     };

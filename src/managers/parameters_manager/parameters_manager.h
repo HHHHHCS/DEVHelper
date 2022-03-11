@@ -12,7 +12,7 @@
 
 namespace managers
 {
-    class ParametersManager : public Manager
+    class ParametersManager final : public Manager
     {
         Q_OBJECT
 
@@ -92,8 +92,12 @@ namespace managers
             Q_INVOKABLE QVariant findParameters(const QString link_name, const QString param_name);
 
         public:
-            ParametersManager(QApplication *app, ManagerCollection* man_collect);
-            ~ParametersManager();
+            explicit ParametersManager(QApplication *app, ManagerCollection* man_collect);
+            ParametersManager(const ParametersManager&) = delete;
+            ParametersManager(const ParametersManager&&) = delete;
+            ParametersManager& operator=(const ParametersManager&) = delete;
+            ParametersManager& operator=(const ParametersManager&&) = delete;
+            ~ParametersManager() final;
 
         private:
             // TODO(huangchsh): 同一连接名存在连接多个设备的情况，需要考虑优化

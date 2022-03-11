@@ -35,7 +35,7 @@ namespace port_lib
     QList<PortInfoStru> findPortsList();
     // TODO(huangchsh): __WEAK 抽象为接口
 
-    class SerialPort : public QSerialPort
+    class SerialPort final: public QSerialPort
     {
         public:
             using QDataBits = DataBits;

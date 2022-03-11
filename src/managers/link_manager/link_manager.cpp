@@ -29,6 +29,7 @@ LinkManager::~LinkManager()
         {
             m_p_serial_scan_thread_ptr->join();
         }
+        while(m_p_serial_scan_thread_ptr->joinable());
     }
 
     disconnectAll();
@@ -132,20 +133,14 @@ void LinkManager::createChoiceLink(const QString name)
         QList<tasks::SharedPtrTasksQueue> link_task_q_list;
         tasks::SharedPtrTasksQueue p_link_task_queue = std::make_shared<tasks::TasksQueue>(name.toStdString() + "_q_" + std::to_string(m_links_map[p_create_link].size()));
         link_task_q_list.append(p_link_task_queue);
+        m_links_map.insert(p_create_link, link_task_q_list);
 
         tasks::Task task(p_link_task_queue->getName() + "heartbeat", p_link_task_queue->getName() , 0., [&, this]()
         {
-            QByteArray arr(10, 'a');
-            communication::SharedPtrLink tmp_link = p_create_link;
-            for(;;)
-            {
-                tmp_link->writeBytes(arr);
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-                // TODO(huangchsh): 发送心跳协议
-                // TODO(huangchsh): 等待设备响应
-                // TODO(huangchsh): 更新连接及选项卡状态
-                // emit sigUpdateLinkStatus(status);
-            }
+            // TODO(huangchsh): 发送心跳协议
+            // TODO(huangchsh): 等待设备响应
+            // TODO(huangchsh): 更新连接及选项卡状态
+            // emit sigUpdateLinkStatus(status);
         });
         bool result = p_link_task_queue->addFastTask(task);
         if(result)
@@ -156,8 +151,6 @@ void LinkManager::createChoiceLink(const QString name)
         {
             qDebug() << "Failed append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
         }
-
-        m_links_map.insert(p_create_link, link_task_q_list);
 
         emit sigAddLink();
 
@@ -180,6 +173,7 @@ void LinkManager::removeChoiceLink(const QString name)
     if(p_link)
     {
         p_link->disconnect();
+        m_links_map.remove(p_link);
         qDebug("%s disconnected", p_link->getPortName().toStdString().data());
     }
 }

@@ -14,22 +14,18 @@ MainManager::MainManager(QApplication *app, ManagerCollection* man_collect)
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
-MainManager::~MainManager()
-{
-}
-
 /**
  * @brief 创建QML应用引擎
  */
-QQmlApplicationEngine* MainManager::createQMLAppEngine(QObject *parent /* = nullptr */)
+std::shared_ptr<QQmlApplicationEngine> MainManager::createQMLAppEngine(QObject *parent /* = nullptr */)
 {
-    QQmlApplicationEngine *p_qml_app_engine = new QQmlApplicationEngine(parent);
+    std::shared_ptr<QQmlApplicationEngine> p_qml_app_engine = std::make_shared<QQmlApplicationEngine>(parent);
 
     p_qml_app_engine->addImportPath("qrc:/QML");
     // 设置根对象属性，用于UI交互
-    p_qml_app_engine->rootContext()->setContextProperty("link_manager_obj", man_collect()->link_man());
-    p_qml_app_engine->rootContext()->setContextProperty("param_manager_obj", man_collect()->param_man());
-    p_qml_app_engine->rootContext()->setContextProperty("upgrade_manager_obj", man_collect()->upgrade_man());
+    p_qml_app_engine->rootContext()->setContextProperty("link_manager_obj", man_collect()->link_man().get());
+    p_qml_app_engine->rootContext()->setContextProperty("param_manager_obj", man_collect()->param_man().get());
+    p_qml_app_engine->rootContext()->setContextProperty("upgrade_manager_obj", man_collect()->upgrade_man().get());
 
     return p_qml_app_engine;
 }

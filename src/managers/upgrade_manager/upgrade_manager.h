@@ -9,7 +9,7 @@
 
 namespace managers
 {
-    class UpgradeManager : public Manager
+    class UpgradeManager final : public Manager
     {
         Q_OBJECT
 
@@ -48,11 +48,14 @@ namespace managers
             Q_INVOKABLE void factory();
 
         public:
-            UpgradeManager(QApplication *app, ManagerCollection* man_collect);
-            ~UpgradeManager();
+            explicit UpgradeManager(QApplication *app, ManagerCollection* man_collect);
+            UpgradeManager(const UpgradeManager&) = delete;
+            UpgradeManager(const UpgradeManager&&) = delete;
+            UpgradeManager& operator=(const UpgradeManager&) = delete;
+            UpgradeManager& operator=(const UpgradeManager&&) = delete;
+            ~UpgradeManager() final;
 
         private:
-
             /**
              * @brief 更新函数
              * @note 用于获取远端更新

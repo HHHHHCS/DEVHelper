@@ -69,7 +69,7 @@ namespace communication
             virtual ~Proto() = default;
 
         protected:
-            Proto(const ProtoType& proto_type, const QString& proto_name)
+            explicit Proto(const ProtoType& proto_type, const QString& proto_name)
                 : QThread(nullptr)
                 , m_proto_type(proto_type)
                 , m_proto_name(proto_name)
@@ -77,6 +77,10 @@ namespace communication
                 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
                 qRegisterMetaType<Proto*>("communication::Proto");
             }
+            Proto(const Proto&) = delete;
+            Proto(const Proto&&) = delete;
+            Proto& operator=(const Proto&) = delete;
+            Proto& operator=(const Proto&&) = delete;
 
             QString getProtoName() const noexcept { return m_proto_name; };
 

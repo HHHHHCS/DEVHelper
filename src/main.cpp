@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
     int exit_code = 0;
 
-    DevHelperApplication *p_app= new DevHelperApplication(argc, argv);
+    std::unique_ptr<DevHelperApplication> p_app= std::make_unique<DevHelperApplication>(argc, argv);
     Q_CHECK_PTR(p_app);
 
     p_app->initCommonType();
@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
     exit_code = p_app->exec();
 
     p_app->shutdown();
-    delete p_app;
 
     return exit_code;
 }

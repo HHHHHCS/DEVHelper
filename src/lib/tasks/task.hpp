@@ -79,10 +79,7 @@ namespace tasks
             virtual ~Task()
             {
                 _work_thread_startup_flag = false;
-                while(_work_thread_startup_flag)
-                {
-                    ;
-                }
+                while(_work_thread_startup_flag);
 
                 if(_work_thread)
                 {
@@ -90,6 +87,7 @@ namespace tasks
                     {
                         _work_thread->join();
                     }
+                    while(_work_thread->joinable());
                 }
 
                 _task_func = nullptr;
@@ -225,6 +223,8 @@ namespace tasks
 
                             updateState();
                         }
+
+                        std::this_thread::sleep_for(util::time::seconds(1));
                     }
                 });
             }
