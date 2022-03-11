@@ -52,7 +52,7 @@ namespace port_lib
                                 QParity parity = QParity::NoParity,
                                 QStopBits stop_bits = QStopBits::OneStop,
                                 QFlowControl flow_control = QFlowControl::NoFlowControl);
-            ~SerialPort() override = default;
+            ~SerialPort() override;
             SerialPort(const SerialPort&) = delete;
             SerialPort(const SerialPort&&) = delete;
             SerialPort& operator=(const SerialPort&) = delete;

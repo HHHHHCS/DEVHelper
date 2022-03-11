@@ -34,7 +34,7 @@ namespace communication
                         qint8 parity = 0,
                         qint8 stop_bits = 1,
                         qint8 flow_control = 0);
-            ~SerialLink();
+            ~SerialLink() override;
 
             void setBaudrate(qint32 baud_rate) { if(m_port_ptr) { m_port_ptr->setBaudRate(baud_rate); } }
             void setDatabits(qint8 data_bits) {  if(m_port_ptr) { m_port_ptr->setDataBits(static_cast<port_lib::SerialPort::QDataBits>(data_bits)); } }
