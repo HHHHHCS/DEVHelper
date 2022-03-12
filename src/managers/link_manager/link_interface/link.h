@@ -21,15 +21,12 @@ namespace communication
         signals:
             void sigConnected();
             void sigDisconnected();
-            void sigBytesReceived(Link*, QByteArray&);
-            void sigBytesSent(Link*, const qint64);
+            void sigBytesSend(const QByteArray&);
+            void sigBytesReceived(QByteArray&);
             void sigCommError(const QString&, const QString&);
 
         private slots:
             virtual void slotWriteBytes(const QByteArray&) = 0;
-
-        public:
-            Q_INVOKABLE virtual void disconnect() = 0;
 
         public:
             virtual ~Link() override = default;
@@ -37,6 +34,8 @@ namespace communication
             virtual void setPortName(const QString name) = 0;
             virtual QString getPortName() const = 0;
             virtual bool getConnected() const = 0;
+
+            virtual void disconnect() = 0;
 
             enum class LinkType : int8_t
             {

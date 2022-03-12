@@ -43,7 +43,7 @@ void SerialLink::slotWriteBytes(const QByteArray &data)
     qint64 sent_size = 0;
     if(0 < (sent_size = m_port_ptr->writePort(data)))
     {
-        emit sigBytesSent(this, sent_size);
+        emit sigBytesSent(sent_size);
     }
 }
 
@@ -57,7 +57,7 @@ void SerialLink::slotReadBytes()
     QByteArray data;
     if(0 < m_port_ptr->readPort(data))
     {
-        emit sigBytesReceived(this, data);
+        emit sigBytesReceived(data);
     }
 }
 

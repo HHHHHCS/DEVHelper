@@ -44,12 +44,12 @@ namespace tasks
         friend class TasksQueue;
 
         public:
-            explicit Task(const std::string name, const std::string q_name, const double target_mb, TaskFunc func)
+            explicit Task(const std::string name, const std::string q_name, TaskFunc func)
                 : _name(name)
                 , _q_name(q_name)
                 , _priority(DEFAULT_PRIORITY)
                 , _state(TaskStateType::READY)
-                , _target_mb(target_mb)
+                , _target_mb(0.0)
                 , _work_thread_startup_flag(false)
                 , _task_func(func) { }
 
@@ -113,7 +113,7 @@ namespace tasks
             uint8_t _priority;
 
             TaskStateType _state;
-            const double _target_mb;
+            double _target_mb;
             double _done_mb;
             double _done_percent;
             double _speed_mb_s;  // 当前速度

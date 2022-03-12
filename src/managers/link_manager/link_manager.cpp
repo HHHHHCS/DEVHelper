@@ -118,12 +118,6 @@ void LinkManager::createChoiceLink(const QString name)
         ;
     }
 
-    // TODO(huangchsh): 通信错误信号
-    connect(p_create_link->get(), &communication::Link::sigCommError, this, &LinkManager::slotLinkCommError);
-    connect(p_create_link->get(), &communication::Link::sigBytesReceived, this, &LinkManager::slotLinkBytesReceived);
-    connect(p_create_link->get(), &communication::Link::sigBytesSent, this, &LinkManager::slotLinkBytesSent);
-    connect(p_create_link.get(), &communication::Link::sigDisconnected, this, &LinkManager::slotLinkDisconnected);
-
     if(p_create_link->connect())
     {
         // 连接成功后，创建任务队列，插入map
@@ -133,24 +127,29 @@ void LinkManager::createChoiceLink(const QString name)
         link_task_q_list.append(p_link_task_queue);
         m_links_map.insert(p_create_link, link_task_q_list);
 
-        tasks::Task task(p_link_task_queue->getName() + "heartbeat", p_link_task_queue->getName() , 0., [&, this]()
-        {
-            // TODO(huangchsh): 发送心跳协议
-            // TODO(huangchsh): 等待设备响应
-            // TODO(huangchsh): 更新连接及选项卡状态
-            // emit sigUpdateLinkStatus(status);
-        });
-        bool result = p_link_task_queue->addFastTask(task);
-        if(result)
-        {
-            qDebug() << "Append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
-        }
-        else
-        {
-            qDebug() << "Failed append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
-        }
+        // tasks::Task task(p_link_task_queue->getName() + "heartbeat", p_link_task_queue->getName() , [&, this]()
+        // {
+        //     // TODO(huangchsh): 发送心跳协议
+        //     // TODO(huangchsh): 等待设备响应
+        //     // TODO(huangchsh): 更新连接及选项卡状态
+        //     // emit sigUpdateLinkStatus(status);
+        // });
+        // bool result = p_link_task_queue->addFastTask(task);
+        // if(result)
+        // {
+        //     qDebug() << "Append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
+        // }
+        // else
+        // {
+        //     qDebug() << "Failed append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
+        // }
 
         emit sigAddLink();
+
+        connect(p_create_link.get(), &communication::Link::sigCommError, this, &LinkManager::slotLinkCommError);
+        connect(p_create_link.get(), &communication::Link::sigBytesReceived, this, &LinkManager::slotLinkBytesReceived);
+        connect(p_create_link.get(), &communication::Link::sigBytesSent, this, &LinkManager::slotLinkBytesSent);
+        connect(p_create_link.get(), &communication::Link::sigDisconnected, this, &LinkManager::slotLinkDisconnected);
 
         qDebug("%s connected", p_create_link->getPortName().toStdString().data(), link_task_q_list.count());
     }
@@ -191,6 +190,7 @@ void LinkManager::disconnectAll()
 
         return communication::SharedPtrLink(nullptr);
     });
+    m_links_map.clear();
 }
 
 /**
@@ -206,7 +206,7 @@ void LinkManager::slotLinkCommError(const QString& link_name, const QString& lin
  * @brief 数据写入应答槽
  * @note 对应信号 communication::Link::sigBytesSent
  */
-void LinkManager::slotLinkBytesSent(communication::Link* link, const qint64 sent_size)
+void LinkManager::slotLinkBytesSent(const qint64 sent_size)
 {
     // TODO(huangchsh): 后续进行处理
 }
@@ -215,9 +215,17 @@ void LinkManager::slotLinkBytesSent(communication::Link* link, const qint64 sent
  * @brief 数据读取应答槽
  * @note 对应信号 communication::Link::sigBytesReceived
  */
-void LinkManager::slotLinkBytesReceived(communication::Link* link, QByteArray& read_bytes)
+void LinkManager::slotLinkBytesReceived(QByteArray& read_bytes)
 {
     // TODO(huangchsh): 转发给协议处理线程
+    communication::Link* link = qobject_cast<communication::Link*>(sender());
+    if(!link)
+    {
+        return;
+    }
+
+    communication::SharedPtrLink p_link(getSharedPtrLinkByName(link->getPortName()));
+
 }
 
 /**

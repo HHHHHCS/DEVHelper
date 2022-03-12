@@ -31,7 +31,7 @@ void ParametersManager::slotsCreateParametersMap(const QString link_name)
         return;
     }
 
-    tasks::Task task("get_param_list", task_queue->getName() , 0., [&, this]()
+    tasks::Task task("get_param_list", task_queue->getName() , [&, this]()
     {
         // TODO(huangchsh): 1. 发送获取请求
         // TODO(huangchsh): 2. 等待反馈

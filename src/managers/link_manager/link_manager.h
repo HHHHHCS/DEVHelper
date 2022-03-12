@@ -10,6 +10,8 @@
 
 #include "tasks_queue.hpp"
 
+#include "devlink2_proto.h"
+
 #include "serial_link.h"
 
 #include "manager_collection.h"
@@ -55,16 +57,15 @@ namespace managers
             /**
              * @brief 数据写入应答槽
              * @note 对应信号 communication::Link::sigBytesSent
-             * @param[in] link 进行数据写入的连接
              * @param[in] bytes
              */
-            void slotLinkBytesSent(communication::Link* link, const qint64 sent_size);
+            void slotLinkBytesSent(const qint64 sent_size);
 
             /**
              * @brief 数据读取应答槽
              * @note 对应信号 communication::Link::sigBytesReceived
              */
-            void slotLinkBytesReceived(communication::Link* link, QByteArray& read_bytes);
+            void slotLinkBytesReceived(QByteArray& read_bytes);
 
             /**
              * @brief 连接断开槽
