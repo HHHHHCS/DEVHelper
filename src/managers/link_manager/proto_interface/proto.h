@@ -31,14 +31,14 @@ namespace communication
              * @brief 协议解析信号
              * @param[in] 协议接口
              */
-            void sigParsed(Proto*);
+            void sigParsed();
 
             /**
              * @brief 协议封装信号
              * @param[in] 协议接口
              * @param[in] 需要进行解析的数据
              */
-            void sigPacked(Proto*, QByteArray&);
+            void sigPacked(QByteArray&);
 
         private slots:
             /**

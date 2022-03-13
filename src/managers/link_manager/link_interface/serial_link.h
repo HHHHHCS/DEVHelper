@@ -25,8 +25,6 @@ namespace communication
             Q_PROPERTY(qint8        stopbits             READ getStopbits            CONSTANT);
             Q_PROPERTY(qint8        parity               READ getParity              CONSTANT);
 
-            Q_INVOKABLE void disconnect() override;
-
         public:
             explicit SerialLink(const QString &port_name,
                         qint32 baud_rate = 115200,
@@ -52,6 +50,8 @@ namespace communication
             port_lib::SerialPort::QDataBits getDatabits() const { return (m_port_ptr ? m_port_ptr->dataBits() : port_lib::SerialPort::QDataBits::UnknownDataBits); }
             port_lib::SerialPort::QStopBits getStopbits() const { return (m_port_ptr ? m_port_ptr->stopBits() : port_lib::SerialPort::QStopBits::UnknownStopBits); }
             port_lib::SerialPort::QParity getParity() const { return (m_port_ptr ? m_port_ptr->parity() : port_lib::SerialPort::QParity::UnknownParity); }
+
+            void disconnect() override;
 
             static QList<port_lib::PortInfoStru> findPortsListForward();
 

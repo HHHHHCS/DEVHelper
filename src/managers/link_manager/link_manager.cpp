@@ -148,7 +148,6 @@ void LinkManager::createChoiceLink(const QString name)
 
         connect(p_create_link.get(), &communication::Link::sigCommError, this, &LinkManager::slotLinkCommError);
         connect(p_create_link.get(), &communication::Link::sigBytesReceived, this, &LinkManager::slotLinkBytesReceived);
-        connect(p_create_link.get(), &communication::Link::sigBytesSent, this, &LinkManager::slotLinkBytesSent);
         connect(p_create_link.get(), &communication::Link::sigDisconnected, this, &LinkManager::slotLinkDisconnected);
 
         qDebug("%s connected", p_create_link->getPortName().toStdString().data(), link_task_q_list.count());
@@ -203,15 +202,6 @@ void LinkManager::slotLinkCommError(const QString& link_name, const QString& lin
 }
 
 /**
- * @brief 数据写入应答槽
- * @note 对应信号 communication::Link::sigBytesSent
- */
-void LinkManager::slotLinkBytesSent(const qint64 sent_size)
-{
-    // TODO(huangchsh): 后续进行处理
-}
-
-/**
  * @brief 数据读取应答槽
  * @note 对应信号 communication::Link::sigBytesReceived
  */
@@ -225,7 +215,7 @@ void LinkManager::slotLinkBytesReceived(QByteArray& read_bytes)
     }
 
     communication::SharedPtrLink p_link(getSharedPtrLinkByName(link->getPortName()));
-
+    
 }
 
 /**
@@ -242,7 +232,6 @@ void LinkManager::slotLinkDisconnected()
 
     disconnect(link, &communication::Link::sigCommError, this, &LinkManager::slotLinkCommError);
     disconnect(link, &communication::Link::sigBytesReceived, this, &LinkManager::slotLinkBytesReceived);
-    disconnect(link, &communication::Link::sigBytesSent, this, &LinkManager::slotLinkBytesSent);
     disconnect(link, &communication::Link::sigDisconnected, this, &LinkManager::slotLinkDisconnected);
 
     searchLinkToDo([&link, this](communication::SharedPtrLink link_shptr)

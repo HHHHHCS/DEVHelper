@@ -95,7 +95,7 @@ void Devlink2Proto::slotParseProto(const QByteArray& buffer)
         m_proto_ptr->decodeMsg(static_cast<uint8_t>(i));
     }
 
-    emit sigParsed(this);
+    emit sigParsed();
 }
 
 /**
@@ -119,5 +119,5 @@ void Devlink2Proto::slotPackProto(uint32_t msg_id, const QByteArray& msg)
     awlink_message_t tmp{0};
     m_proto_ptr->encodeMsg(msg_id, msg.data(), tmp);
 
-    emit sigPacked(this, QByteArray(reinterpret_cast<char*>(&tmp), sizeof(tmp)));
+    emit sigPacked(QByteArray(reinterpret_cast<char*>(&tmp), sizeof(tmp)));
 }

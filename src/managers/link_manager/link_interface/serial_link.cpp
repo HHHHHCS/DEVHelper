@@ -23,6 +23,7 @@ SerialLink::SerialLink(const QString &port_name,
 
     QObject::connect(m_port_ptr.get(), static_cast<void (QSerialPort::*)(QSerialPort::SerialPortError)>(&QSerialPort::error), this, &SerialLink::slotLinkError);
     QObject::connect(m_port_ptr.get(), &QSerialPort::readyRead, this, &SerialLink::slotReadBytes);
+    QObject::connect(this, &SerialLink::sigBytesSend, this, &SerialLink::slotWriteBytes);
 }
 
 SerialLink::~SerialLink()
@@ -40,11 +41,7 @@ void SerialLink::slotWriteBytes(const QByteArray &data)
         return;
     }
 
-    qint64 sent_size = 0;
-    if(0 < (sent_size = m_port_ptr->writePort(data)))
-    {
-        emit sigBytesSent(sent_size);
-    }
+    m_port_ptr->writePort(data);
 }
 
 void SerialLink::slotReadBytes()

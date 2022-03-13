@@ -55,13 +55,6 @@ namespace managers
             void slotLinkCommError(const QString& link_name, const QString& link_error);
 
             /**
-             * @brief 数据写入应答槽
-             * @note 对应信号 communication::Link::sigBytesSent
-             * @param[in] bytes
-             */
-            void slotLinkBytesSent(const qint64 sent_size);
-
-            /**
              * @brief 数据读取应答槽
              * @note 对应信号 communication::Link::sigBytesReceived
              */

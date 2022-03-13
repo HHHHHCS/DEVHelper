@@ -14,7 +14,7 @@ namespace communication
     {
         Q_OBJECT
 
-        public:
+        signals:
             /**
              * @brief 触发恢复出厂成功信号
              */
@@ -49,6 +49,13 @@ namespace communication
 
         private:
             UniquePtrDevlink2 m_proto_ptr;
+
+            /**
+             * @brief 生成恢复出厂消息
+             *
+             * @return ** void
+             */
+            void packMsgRestoreFactory();
     };
     using UniquePtrDevlink2Proto = std::unique_ptr<Devlink2Proto>;
 }   // namespace communication

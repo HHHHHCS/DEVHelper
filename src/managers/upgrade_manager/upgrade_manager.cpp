@@ -1,4 +1,7 @@
-﻿#include "upgrade_manager.h"
+﻿#include <QDebug>
+
+#include "link_manager.h"
+#include "upgrade_manager.h"
 
 
 using namespace managers;
