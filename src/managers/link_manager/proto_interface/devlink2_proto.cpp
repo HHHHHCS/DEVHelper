@@ -9,6 +9,8 @@ using namespace devconn;
 Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
     : Proto(ProtoType::DEVLINK2, ("dlink2-" + name))
     , m_proto_ptr(std::make_unique<devconn::Devlink2>(getProtoName().toStdString(), chan))
+    , m_parse_mutex()
+    , m_pack_mutex()
 {
     if(m_proto_ptr)
     {
@@ -23,6 +25,8 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
                 // TODO(huangchsh): 消息转发
                 awlink_dev_heartbeat_t hb{0};
                 memcpy(&hb, msg, sizeof(awlink_dev_heartbeat_t));
+
+                // emit sigParsed();
             }))
             {
                 return;
@@ -37,6 +41,8 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
                 // TODO(huangchsh): 消息转发
                 awlink_query_or_modify_dev_params_ack_t ack{0};
                 memcpy(&ack, msg, sizeof(awlink_query_or_modify_dev_params_ack_t));
+
+                // emit sigParsed();
             }))
             {
                 return;
@@ -51,6 +57,8 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
                 // TODO(huangchsh): 消息转发
                 awlink_restore_factory_ack_t ack{0};
                 memcpy(&ack, msg, sizeof(awlink_restore_factory_ack_t));
+
+                // emit sigParsed();
             }))
             {
                 return;
@@ -65,6 +73,8 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
                 // TODO(huangchsh): 消息转发
                 awlink_update_firmware_ack_t ack{0};
                 memcpy(&ack, msg, sizeof(awlink_update_firmware_ack_t));
+
+                // emit sigParsed();
             }))
             {
                 return;
@@ -90,12 +100,11 @@ void Devlink2Proto::slotParseProto(const QByteArray& buffer)
         return;
     }
 
-    for(auto i : buffer)
+    QMutexLocker locker(&m_parse_mutex);
+    for(auto& i : buffer)
     {
         m_proto_ptr->decodeMsg(static_cast<uint8_t>(i));
     }
-
-    emit sigParsed();
 }
 
 /**
@@ -116,8 +125,10 @@ void Devlink2Proto::slotPackProto(uint32_t msg_id, const QByteArray& msg)
         return;
     }
 
+    QMutexLocker locker(&m_pack_mutex);
     awlink_message_t tmp{0};
-    m_proto_ptr->encodeMsg(msg_id, msg.data(), tmp);
-
-    emit sigPacked(QByteArray(reinterpret_cast<char*>(&tmp), sizeof(tmp)));
+    if(Devlink2::DEV_SUCCESS == m_proto_ptr->encodeMsg(msg_id, msg.data(), tmp))
+    {
+        emit sigPacked(QByteArray(reinterpret_cast<char*>(&tmp), sizeof(tmp)));
+    }
 }

@@ -68,7 +68,7 @@ Item
         {
             console.log("Restore factory firmware and configure which about it.")
 
-            upgrade_manager_obj.factory()
+            upgrade_manager_obj.factory(link_name)
         }
     }
 

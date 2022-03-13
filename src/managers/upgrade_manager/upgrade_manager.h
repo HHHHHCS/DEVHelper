@@ -45,7 +45,7 @@ namespace managers
              * @brief 出厂配置函数
              * @note 用于实现固件及参数恢复或初次出厂
              */
-            Q_INVOKABLE void factory();
+            Q_INVOKABLE void factory(const QString link_name);
 
         public:
             explicit UpgradeManager(QApplication *app, ManagerCollection* man_collect);

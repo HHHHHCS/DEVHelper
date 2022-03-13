@@ -28,15 +28,28 @@ namespace communication
             void sigBreakdown();
 
             /**
-             * @brief 协议解析信号
-             * @param[in] 协议接口
+             * @brief 协议封装信号
+             * @param[in] 消息号
+             * @param[in] 需要封装的数据
              */
-            void sigParsed();
+            void sigPack(uint32_t, const QByteArray&);
 
             /**
-             * @brief 协议封装信号
-             * @param[in] 协议接口
-             * @param[in] 需要进行解析的数据
+             * @brief 协议解析信号
+             * @param[in] 需要解析的数据
+             */
+            void sigParse(const QByteArray&);
+
+            /**
+             * @brief 协议解析完成信号
+             * @param[in] 解析完成的数据
+             */
+            void sigParsed(const QByteArray&);
+
+            /**
+             * @brief 协议封装完成信号
+             * @note 对应槽 communication::Link::slotWriteBytes
+             * @param[in] 封装完成的数据
              */
             void sigPacked(QByteArray&);
 
@@ -68,6 +81,10 @@ namespace communication
         public:
             virtual ~Proto() = default;
 
+            QString getProtoName() const noexcept { return m_proto_name; };
+
+            ProtoType getProtoType() const noexcept { return m_proto_type; }
+
         protected:
             explicit Proto(const ProtoType& proto_type, const QString& proto_name)
                 : QThread(nullptr)
@@ -81,10 +98,6 @@ namespace communication
             Proto(const Proto&&) = delete;
             Proto& operator=(const Proto&) = delete;
             Proto& operator=(const Proto&&) = delete;
-
-            QString getProtoName() const noexcept { return m_proto_name; };
-
-            ProtoType getLinkType() const noexcept { return m_proto_type; }
 
         private:
             const ProtoType m_proto_type;

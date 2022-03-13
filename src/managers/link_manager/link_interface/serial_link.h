@@ -13,10 +13,25 @@ namespace communication
         Q_OBJECT
 
         public slots:
-            void slotLinkError(port_lib::SerialPort::QSerialPortError error);
+            /**
+             * @brief 连接错误槽
+             * @note 对应信号 QSerialPort::error
+             * @param error 具体错误
+             */
+            void slotLinkError(const port_lib::SerialPort::QSerialPortError&);
 
         private slots:
+            /**
+             * @brief 字节发送槽
+             * @note 对应信号 communication::Link::sigPacked
+             * @param[in] 需要发送的字节
+             */
             void slotWriteBytes(const QByteArray &data) override;
+
+            /**
+             * @brief 字节接收槽
+             * @note 对应信号 QSerialPort::readyRead
+             */
             void slotReadBytes();
 
         public:
@@ -60,6 +75,9 @@ namespace communication
 
         private:
             UniquePtrSerialPort m_port_ptr;
+
+            QMutex m_write_mutex;
+            QMutex m_read_mutex;
 
             bool connect() override;
     };

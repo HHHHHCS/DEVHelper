@@ -2,6 +2,7 @@
 
 #include <QMap>
 #include <QStringList>
+#include <QMutexLocker>
 
 #include "devlink2.h"
 
@@ -50,12 +51,8 @@ namespace communication
         private:
             UniquePtrDevlink2 m_proto_ptr;
 
-            /**
-             * @brief 生成恢复出厂消息
-             *
-             * @return ** void
-             */
-            void packMsgRestoreFactory();
+            QMutex m_parse_mutex;
+            QMutex m_pack_mutex;
     };
     using UniquePtrDevlink2Proto = std::unique_ptr<Devlink2Proto>;
 }   // namespace communication

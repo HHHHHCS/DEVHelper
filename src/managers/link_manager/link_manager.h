@@ -55,12 +55,6 @@ namespace managers
             void slotLinkCommError(const QString& link_name, const QString& link_error);
 
             /**
-             * @brief 数据读取应答槽
-             * @note 对应信号 communication::Link::sigBytesReceived
-             */
-            void slotLinkBytesReceived(QByteArray& read_bytes);
-
-            /**
              * @brief 连接断开槽
              * @note 对应信号 communication::Link::sigDisconnected
              */
@@ -101,9 +95,10 @@ namespace managers
             ~LinkManager() final;
 
             QVariantMap getLinkInfoMap() const { return m_link_info_map; }
-            int getLinkNum() const { return m_links_map.count(); }
-            communication::SharedPtrLink getSharedPtrLinkByName(const QString name);
-            tasks::SharedPtrTasksQueue getFreeSharedPtrTasksQueueByLink(const QString name);
+            int getLinkNum() const { return m_link_block_map.count(); }
+            communication::SharedPtrLink getSharedPtrLinkByName(const QString& name);
+            communication::SharedPtrProto getSharedPtrProtoByLinkName(const QString& name);
+            tasks::SharedPtrTasksQueue getFreeSharedPtrTasksQueueByLink(const QString& name);
 
             /**
              * @brief 创建可用连接列表扫描线程
@@ -120,11 +115,19 @@ namespace managers
             using TasksQueuePtrList = QList<tasks::SharedPtrTasksQueue>;
             using TasksQueuePtrListIterator = TasksQueuePtrList::Iterator;
             using TasksQueuePtrListConstIterator = TasksQueuePtrList::ConstIterator;
-            using LinkTasksQueueMap = QMap<communication::SharedPtrLink, TasksQueuePtrList>;
-            using LinkTasksQueueMapConstIterator = LinkTasksQueueMap::ConstIterator;
-            using LinkTasksQueueMapIterator = LinkTasksQueueMap::Iterator;
 
-            using LinkOptFunc = std::function<communication::SharedPtrLink(communication::SharedPtrLink)>;
+            struct LinkBlock
+            {
+                communication::SharedPtrProto p_proto;
+
+                TasksQueuePtrList tasks_q_list;
+
+                explicit LinkBlock() = default;
+                LinkBlock(communication::Proto* proto, TasksQueuePtrList& t_q_list)
+                    : p_proto(proto)
+                    , tasks_q_list(t_q_list) {}
+            };
+            using LinkBlockMap = QMap<communication::SharedPtrLink, LinkBlock>;
 
         private:
             static constexpr char *LINK_DEV_NAME_LIST[] = {"rc", "rn", "rp", "ba", "uav"};   // 可选设备列表
@@ -134,8 +137,8 @@ namespace managers
 
             QVariantMap m_link_info_map;   // 可连接端口名列表
 
-            LinkTasksQueueMap m_links_map;   // 选择的连接端口指针对象及其携带的任务队列
+            LinkBlockMap m_link_block_map;   // 选择的连接端口指针对象及其携带的任务队列
 
-            communication::SharedPtrLink searchLinkToDo(LinkOptFunc func);
+            communication::SharedPtrLink searchLinkToDo(std::function<communication::SharedPtrLink(const communication::SharedPtrLink&)> func);
     };
 }   // namespace managers

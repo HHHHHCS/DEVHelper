@@ -51,9 +51,43 @@ void UpgradeManager::flash(const QVariant& file_name)
  * @brief 出厂配置函数
  * @note 用于实现固件及参数恢复或初次出厂
  */
-void UpgradeManager::factory()
+void UpgradeManager::factory(const QString link_name)
 {
     // TODO(huangchsh): 发送恢复出厂通知
+    tasks::SharedPtrTasksQueue task_queue = man_collect()->link_man()->getFreeSharedPtrTasksQueueByLink(link_name);
+    if(!task_queue)
+    {
+        qDebug() << "Failed to do" << link_name.toStdString().data() << "restore factory" << endl;
+        return;
+    }
+
+    tasks::Task task(link_name.toStdString() + "_restore_factory", task_queue->getName() , [p_proto = man_collect()->link_man()->getSharedPtrProtoByLinkName(link_name), this]()
+    {
+        if(p_proto->getProtoType() == communication::Proto::ProtoType::DEVLINK2)
+        {
+            static uint8_t msg_seq;
+
+            awlink_restore_factory_t msg
+            {
+                // .time_boot_ms = 0,
+                // .seq = msg_seq++,
+                // .type = RC,
+                // .id = 0,
+            };
+
+            p_proto->sigPack(AWLINK_MSG_ID_HOST_HEARTBEAT, QByteArray(reinterpret_cast<char*>(&msg), sizeof(awlink_host_heartbeat_t)));
+        }
+    });
+
+    bool result = task_queue->addTask(task);
+    if(result)
+    {
+        qDebug() << "Append task" << task.getName().data() << "into queue" << task_queue->getName().data() << endl;
+    }
+    else
+    {
+        qDebug() << "Failed append task" << task.getName().data() << "into queue" << task_queue->getName().data() << endl;
+    }
 }
 
 /**
