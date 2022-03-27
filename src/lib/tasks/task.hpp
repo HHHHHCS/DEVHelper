@@ -44,10 +44,11 @@ namespace tasks
         friend class TasksQueue;
 
         public:
-            explicit Task(const std::string name, const std::string q_name, TaskFunc func)
+            explicit Task(const std::string name, const std::string q_name, const uint32_t freq, TaskFunc func)
                 : _name(name)
                 , _q_name(q_name)
                 , _priority(DEFAULT_PRIORITY)
+                , _freq(freq)
                 , _state(TaskStateType::READY)
                 , _target_mb(0.0)
                 , _work_thread_startup_flag(false)
@@ -60,6 +61,7 @@ namespace tasks
                 _name = cpy.getName();
                 _q_name = cpy.getQueueName();
                 _priority = cpy.getPriority();
+                _freq = cpy.getFreq();
                 _state = cpy.getState();
                 _task_func = cpy.getTaskFunc();
             }
@@ -79,8 +81,6 @@ namespace tasks
             virtual ~Task()
             {
                 _work_thread_startup_flag = false;
-                while(_work_thread_startup_flag);
-
                 if(_work_thread)
                 {
                     if(_work_thread->joinable())
@@ -97,6 +97,7 @@ namespace tasks
             std::string getQueueName() const { return _q_name; }
             TaskStateType getState() const { return _state; }
             uint8_t getPriority() const { return _priority; }
+            uint32_t getFreq() const { return _freq; }
             double getTargetSpendTime() const { return _target_spend_time; }
             double getTargetMb() const { return _target_mb; }
             double getSpeed() const { return _speed_mb_s; }
@@ -111,8 +112,10 @@ namespace tasks
             std::string _q_name;
 
             uint8_t _priority;
+            uint32_t _freq;
 
-            TaskStateType _state;
+            TaskFunc _task_func;
+
             double _target_mb;
             double _done_mb;
             double _done_percent;
@@ -127,10 +130,8 @@ namespace tasks
 
             double _single_run_duration;    // 单周期执行用时
 
-            std::mutex _state_mutex;
-
+            std::atomic<TaskStateType> _state;
             std::atomic_bool _work_thread_startup_flag;
-            TaskFunc _task_func;
             std::unique_ptr<std::thread> _work_thread;
 
             void setPriority(const uint8_t prio) { _priority = prio; }
@@ -161,14 +162,12 @@ namespace tasks
 
             virtual void stop()
             {
-                lock_guard lock(_state_mutex);
                 // TODO(huangchsh): 对当前任务状态进行判断，如优先级、速度、时间、状态的影响
                 _state = TaskStateType::STOP;
             }
 
             virtual void terminate()
             {
-                lock_guard lock(_state_mutex);
                 // TODO(huangchsh): 处理任务后续状态
                 _state = TaskStateType::TERMINATE;
             }
@@ -199,7 +198,6 @@ namespace tasks
                         && _state != TaskStateType::TERMINATE))
                     {
                         {
-                            lock_guard lock(_state_mutex);
                             // TODO(huangchsh): 单周期执行用时记录
 
                             if(_state == TaskStateType::STOP)
@@ -214,23 +212,32 @@ namespace tasks
                                 try
                                 {
                                     _task_func();
+                                    updateState();
                                 }
                                 catch(std::exception &e)
                                 {
                                     _state = TaskStateType::TERMINATE;
                                 }
                             }
-
-                            updateState();
                         }
 
-                        std::this_thread::sleep_for(util::time::seconds(1));
+                        if(_freq)
+                        {
+                            std::this_thread::sleep_for(util::time::seconds(1 / _freq));
+                        }
                     }
                 });
             }
 
             inline void updateState()
             {
+                // TODO(huangchsh): 频率设为0表示只执行一次任务
+                if(0 == _freq)
+                {
+                    _state = TaskStateType::FINISH;
+                    return;
+                }
+
                 _done_percent = (_done_mb / _target_mb) * 100.f;
 
                 _spend_time = util::time::elapsed<util::time::SteadyClock, util::time::ms>(_start_time);

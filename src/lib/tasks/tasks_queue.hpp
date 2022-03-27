@@ -48,7 +48,6 @@ namespace tasks
                 removeAllTasks();
 
                 _q_sch_thread_startup_flag = false;
-                while(_q_sch_thread_startup_flag);
 
                 if(_q_sch_thread)
                 {
@@ -60,18 +59,16 @@ namespace tasks
                 }
             }
 
-            SharedPtrTask operator[](const uint8_t prio)
-            {
-                return getTask(prio);
-            }
+            void setState(const TasksQueueStateType state) { _q_state = state; }
 
-            SharedPtrTask operator[](const std::string task_name)
-            {
-                return getTask(task_name);
-            }
+            std::string getName() const { return _q_name; }
+            uint8_t getMaxSize() const { return _q_max_size; }
+            size_t getTasksCount() const { return _q_list.size(); }
+            TasksQueueStateType getState() const { return _q_state; }
 
-            SharedPtrTask getTask(const uint8_t prio) const
+            SharedPtrTask getTask(const uint8_t& prio)
             {
+                lock_guard lock(_q_mutex);
                 for(auto &iter : _q_list)
                 {
                     if(iter->getPriority() == prio)
@@ -83,8 +80,9 @@ namespace tasks
                 return SharedPtrTask(nullptr);
             }
 
-            SharedPtrTask getTask(const std::string task_name) const
+            SharedPtrTask getTask(const std::string& task_name)
             {
+                lock_guard lock(_q_mutex);
                 for(auto &iter : _q_list)
                 {
                     if(iter->getName() == task_name)
@@ -96,23 +94,26 @@ namespace tasks
                 return SharedPtrTask(nullptr);
             }
 
-            void setState(const TasksQueueStateType state) { _q_state = state; }
+            template<typename T>
+            auto& operator[](const T&& t_attr) { return getTask(std::forward<T>(t_attr)); }
 
-            std::string getName() const { return _q_name; }
-            uint8_t getMaxSize() const { return _q_max_size; }
-            size_t getTasksCount() const { return _q_list.size(); }
-            TasksQueueStateType getState() const { return _q_state; }
+            template<typename T>
+            void removeTask(const T&& t_attr)
+            {
+                lock_guard lock(_q_mutex);
+                removeTaskListElem(getTask(std::forward<const T>(t_attr)));
+            }
 
             bool addTask(const Task& task)
             {
+                lock_guard lock(_q_mutex);
                 if(_q_list.size() == MAX_TASK_COUNTS)
                 {
                     // TODO(huangchsh)增加log
                     return false;
                 }
 
-                lock_guard lock(_q_mutex);
-                SharedPtrTask p_task = std::make_shared<Task>(task);
+                auto& p_task(std::make_shared<Task>(task));
                 _q_list.push_back(p_task);
 
                 p_task->setPriority(_q_list.size() - 1);
@@ -122,6 +123,7 @@ namespace tasks
 
             bool addFastTask(const Task& task)
             {
+                lock_guard lock(_q_mutex);
                 if(_q_list.size() == MAX_TASK_COUNTS)
                 {
                     return false;
@@ -156,7 +158,7 @@ namespace tasks
                     return false;
                 }
 #endif
-                lock_guard lock(_q_mutex);
+
                 SharedPtrTask p_task = std::make_shared<Task>(task);
                 _q_list.push_front(p_task);
 
@@ -165,48 +167,33 @@ namespace tasks
                 return true;
             }
 
-            void removeTask(const std::string task_name)
-            {
-                removeTaskListElem(getTask(task_name));
-            }
-
-            void removeTask(const uint8_t prio)
-            {
-                removeTaskListElem(getTask(prio));
-            }
-
             void removeAllTasks()
             {
+                lock_guard lock(_q_mutex);
                 if(_q_list.empty())
                 {
                     return;
                 }
 
-                for(auto i = 0; i < _q_list.size(); ++i)
-                {
-                    _q_list.pop_front();
-                }
+                _q_list.clear();
             }
 
-            void modifyTaskAttribute(const std::string name, const TaskAttributeType attr_type, void *arg)
+            void modifyTaskAttribute(const std::string& name, const TaskAttributeType& attr_type, void *arg)
             {
                 switch(attr_type)
                 {
                     case TaskAttributeType::STATE:
                     {
-                        lock_guard lock(_q_mutex);
                         getTask(name)->setState(*reinterpret_cast<TaskStateType*>(arg));
                         break;
                     }
                     case TaskAttributeType::PRIORITY:
                     {
-                        lock_guard lock(_q_mutex);
                         getTask(name)->setPriority(*reinterpret_cast<uint8_t*>(arg));
                         break;
                     }
                     case TaskAttributeType::EXP_PARAM:
                     {
-                        lock_guard lock(_q_mutex);
                         // TODO(huangchsh): 期望参数修改
                         break;
                     }
@@ -238,18 +225,25 @@ namespace tasks
                                             continue;
                                         }
 
-                                        for(auto &item : _q_list)
+                                        for(auto& iter = _q_list.cbegin(); iter != _q_list.cend();)
                                         {
-                                            if(item->getState() == TaskStateType::READY
-                                            && item->getPriority() <= MAX_RUNNING_TASKS_MEANWHILE_CONNTS)
+                                            auto& elem = (*iter);
+                                            if(elem->getState() == TaskStateType::READY
+                                            && elem->getPriority() <= MAX_RUNNING_TASKS_MEANWHILE_CONNTS)
                                             {
-                                                item->start();
+                                                elem->start();
                                             }
 
-                                            if(item->getState() == TaskStateType::FINISH
-                                            || item->getState() == TaskStateType::TERMINATE)
+                                            if(elem->getState() == TaskStateType::FINISH
+                                            || elem->getState() == TaskStateType::TERMINATE)
                                             {
-                                                removeTaskListElem(item);
+                                                auto tmp_iter = iter;
+                                                ++iter;
+                                                _q_list.erase(tmp_iter);
+                                            }
+                                            else
+                                            {
+                                                ++iter;
                                             }
                                         }
 
@@ -302,33 +296,46 @@ namespace tasks
 
             TaskPtrList _q_list;
 
-            TasksQueueStateType _q_state;
+            std::atomic<TasksQueueStateType> _q_state;
 
             std::mutex _q_mutex;
             std::atomic_bool _q_sch_thread_startup_flag;
             std::atomic_uint8_t _q_running_tasks_meanwhile_counts;
             std::unique_ptr<std::thread> _q_sch_thread;
 
-            void removeTaskListElem(const SharedPtrTask &elem)
+            void removeTaskListElem(const SharedPtrTask& elem)
             {
-                if(elem == nullptr)
+                if(!elem)
                 {
                     return;
                 }
 
-                if(elem->getState() == TaskStateType::RUNNING)
+                TaskPtrListConstIterator& iter = _q_list.cbegin();
+                for(; iter != _q_list.cend(); ++iter)
+                {
+                    if(*iter == elem)
+                    {
+                        break;
+                    }
+                }
+
+                if(iter == _q_list.cend())
+                {
+                    return;
+                }
+
+                if(elem->getState() != TaskStateType::TERMINATE)
                 {
                     elem->terminate();
                 }
 
-                lock_guard lock(_q_mutex);
                 // 查询指针引用计数
                 WeakPtrTask wp_task(elem);
                 if(!wp_task.expired())
                 {
                     if(wp_task.use_count() < 2)
                     {
-                        _q_list.remove(elem);
+                        _q_list.erase(iter);
                     }
                 }
             }

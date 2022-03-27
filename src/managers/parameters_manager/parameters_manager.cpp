@@ -31,7 +31,7 @@ void ParametersManager::slotsCreateParametersMap(const QString link_name)
         return;
     }
 
-    tasks::Task task("get_param_list", task_queue->getName() , [&, this]()
+    tasks::Task task("get_param_list", task_queue->getName(), 0, [&, this]()
     {
         // TODO(huangchsh): 1. 发送获取请求
         // TODO(huangchsh): 2. 等待反馈
@@ -42,6 +42,7 @@ void ParametersManager::slotsCreateParametersMap(const QString link_name)
         {
             emit sigFetchParametersMap(link_name, m_dev_params_map[link_name]);
         }
+        printf("%s\r\n", "get_param_list");
     });
 
     bool result = task_queue->addTask(task);

@@ -94,7 +94,7 @@ namespace managers
             LinkManager&& operator=(const LinkManager&&) = delete;
             ~LinkManager() final;
 
-            QVariantMap getLinkInfoMap() const { return m_link_info_map; }
+            QVariantMap& getLinkInfoMap() { return m_link_info_map; }
             int getLinkNum() const { return m_link_block_map.count(); }
             communication::SharedPtrLink getSharedPtrLinkByName(const QString& name);
             communication::SharedPtrProto getSharedPtrProtoByLinkName(const QString& name);

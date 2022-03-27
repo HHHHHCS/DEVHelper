@@ -61,7 +61,7 @@ void UpgradeManager::factory(const QString link_name)
         return;
     }
 
-    tasks::Task task(link_name.toStdString() + "_restore_factory", task_queue->getName() , [p_proto = man_collect()->link_man()->getSharedPtrProtoByLinkName(link_name), this]()
+    tasks::Task task(link_name.toStdString() + "_restore_factory", task_queue->getName(), 0, [p_proto = man_collect()->link_man()->getSharedPtrProtoByLinkName(link_name), this]()
     {
         if(p_proto->getProtoType() == communication::Proto::ProtoType::DEVLINK2)
         {

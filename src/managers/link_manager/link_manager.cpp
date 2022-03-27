@@ -168,7 +168,7 @@ void LinkManager::createChoiceLink(const QString name)
         connect(link_block.p_proto.get(), &communication::Proto::sigPacked, p_create_link.get(), &communication::Link::slotWriteBytes);
 
         // 添加默认任务：发送心跳
-        tasks::Task task(p_link_task_queue->getName() + "heartbeat", p_link_task_queue->getName() , [p_proto = link_block.p_proto, this]()
+        tasks::Task task("heartbeat", p_link_task_queue->getName(), 1, [p_proto = link_block.p_proto, this]()
         {
             static uint8_t msg_seq;
 
@@ -189,7 +189,7 @@ void LinkManager::createChoiceLink(const QString name)
 
                 p_proto->sigPack(AWLINK_MSG_ID_HOST_HEARTBEAT, QByteArray(reinterpret_cast<char*>(&msg), sizeof(awlink_host_heartbeat_t)));
             }
-
+            printf("%s\r\n", "heartbeat");
             // TODO(huangchsh): 更新连接及选项卡状态
             // emit sigUpdateLinkStatus(status);
         });
@@ -269,7 +269,7 @@ void LinkManager::slotLinkDisconnected()
         return;
     }
 
-    const auto& link_proto = getSharedPtrProtoByLinkName(communication::SharedPtrLink(link)->getPortName());
+    auto& link_proto = getSharedPtrProtoByLinkName(link->getPortName());
     if(link_proto)
     {
         disconnect(link, &communication::Link::sigBytesReceived, link_proto.get(), &communication::Proto::slotParseProto);
