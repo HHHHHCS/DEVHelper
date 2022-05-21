@@ -2,6 +2,7 @@
 #include <chrono>
 
 #include <QApplication>
+#include <QDateTime>
 #include <QDebug>
 // #include <QSignalSpy>
 
@@ -58,7 +59,7 @@ void LinkManager::createScanLinksListWork()
                         // TODO(huangchsh): 由于驱动环境原因，此处用序列号进行识别，后期进行优化
                         if(iter.serial_number.toLower().contains(link_dev_name))
                         {
-                            m_link_info_map.insert(iter.name, iter.description);
+                            m_link_info_map.insert(iter.name, iter.serial_number);
                         }
                     }
 
@@ -118,99 +119,97 @@ void LinkManager::createChoiceLink(const QString name)
         ;
     }
 
-    if(p_create_link->connect())
-    {
-        // 连接成功后，创建任务队列，插入map
-        LinkBlock link_block;
-
-        // TODO(huangchsh): 此逻辑可扩展，不应将协议应用局限于连接类型
-        const auto& link_type = p_create_link->getLinkType();
-        switch (link_type)
-        {
-            case communication::Link::LinkType::SERIAL:
-            {
-                link_block.p_proto = std::make_unique<communication::Devlink2Proto>(name, static_cast<awlink_channel_t>(m_link_block_map[p_create_link].tasks_q_list.size()));
-                break;
-            }
-            case communication::Link::LinkType::CAN:
-            {
-                break;
-            }
-            case communication::Link::LinkType::TCP:
-            {
-                break;
-            }
-            case communication::Link::LinkType::UDP:
-            {
-                break;
-            }
-            case communication::Link::LinkType::UNKNOWN_TYPE:
-            default:
-            {
-                break;
-            }
-        }
-
-        if(!link_block.p_proto)
-        {
-            return;
-        }
-
-        // TODO(huangchsh): 通过index支持多条队列
-        auto& p_link_task_queue = std::make_shared<tasks::TasksQueue>(name.toStdString() + "_q_" + std::to_string(m_link_block_map[p_create_link].tasks_q_list.size()));
-        link_block.tasks_q_list.append(p_link_task_queue);
-        m_link_block_map.insert(p_create_link, link_block);
-
-        connect(p_create_link.get(), &communication::Link::sigCommError, this, &LinkManager::slotLinkCommError);
-        connect(p_create_link.get(), &communication::Link::sigDisconnected, this, &LinkManager::slotLinkDisconnected);
-        connect(p_create_link.get(), &communication::Link::sigBytesReceived, link_block.p_proto.get(), &communication::Proto::slotParseProto);
-        connect(link_block.p_proto.get(), &communication::Proto::sigPack, link_block.p_proto.get(), &communication::Proto::slotPackProto);
-        connect(link_block.p_proto.get(), &communication::Proto::sigPacked, p_create_link.get(), &communication::Link::slotWriteBytes);
-
-        // 添加默认任务：发送心跳
-        tasks::Task task("heartbeat", p_link_task_queue->getName(), 1, [p_proto = link_block.p_proto, this]()
-        {
-            static uint8_t msg_seq;
-
-            if(p_proto->getProtoType() == communication::Proto::ProtoType::DEVLINK2)
-            {
-                awlink_host_heartbeat_t msg
-                {
-                    // .time_boot_ms = 0,
-                    // // .connection_num = m_link_block_map.count(),
-                    // .seq = msg_seq++,
-                    // // .type = RC,
-                    // // .id = 0,
-                    // // .task_queue_num,
-                    // // .state,
-                    // .sw_ver = 1,
-                    // .proto_ver = 2,
-                };
-
-                p_proto->sigPack(AWLINK_MSG_ID_HOST_HEARTBEAT, QByteArray(reinterpret_cast<char*>(&msg), sizeof(awlink_host_heartbeat_t)));
-            }
-            printf("%s\r\n", "heartbeat");
-            // TODO(huangchsh): 更新连接及选项卡状态
-            // emit sigUpdateLinkStatus(status);
-        });
-        bool result = p_link_task_queue->addFastTask(task);
-        if(result)
-        {
-            qDebug() << "Append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
-        }
-        else
-        {
-            qDebug() << "Failed append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
-        }
-
-        emit sigAddLink();
-
-        qDebug("%s connected", p_create_link->getPortName().toStdString().data(), link_block.tasks_q_list.count());
-    }
-    else
+    if(!p_create_link->connect())
     {
         qDebug("%s connect failed", p_create_link->getPortName().toStdString().data());
+        return;
     }
+
+    // 连接成功后，创建任务队列，插入map
+    LinkBlock link_block;
+
+    // TODO(huangchsh): 此逻辑可扩展，不应将协议应用局限于连接类型
+    const auto& link_type = p_create_link->getLinkType();
+    switch (link_type)
+    {
+        case communication::Link::LinkType::SERIAL:
+        {
+            link_block.p_proto = std::make_unique<communication::Devlink2Proto>(name, static_cast<awlink_channel_t>(m_link_block_map[p_create_link].tasks_q_list.size()));
+            break;
+        }
+        case communication::Link::LinkType::CAN:
+        {
+            break;
+        }
+        case communication::Link::LinkType::TCP:
+        {
+            break;
+        }
+        case communication::Link::LinkType::UDP:
+        {
+            break;
+        }
+        case communication::Link::LinkType::UNKNOWN_TYPE:
+        default:
+        {
+            break;
+        }
+    }
+
+    if(!link_block.p_proto)
+    {
+        return;
+    }
+
+    // TODO(huangchsh): 通过index支持多条队列
+    auto& p_link_task_queue = std::make_shared<tasks::TasksQueue>(name.toStdString() + "_q_" + std::to_string(m_link_block_map[p_create_link].tasks_q_list.size()));
+    link_block.tasks_q_list.append(p_link_task_queue);
+
+    connect(p_create_link.get(), &communication::Link::sigCommError, this, &LinkManager::slotLinkCommError);
+    connect(p_create_link.get(), &communication::Link::sigDisconnected, this, &LinkManager::slotLinkDisconnected);
+    connect(p_create_link.get(), &communication::Link::sigBytesReceived, link_block.p_proto.get(), &communication::Proto::slotParseProto, Qt::DirectConnection);
+    connect(link_block.p_proto.get(), &communication::Proto::sigPacked, p_create_link.get(), &communication::Link::slotWriteBytes, Qt::DirectConnection);
+
+    m_link_block_map.insert(p_create_link, link_block);
+
+    // // 添加默认任务：发送心跳
+    // tasks::Task task("heartbeat", p_link_task_queue->getName(), 1, [p_proto = link_block.p_proto, this]()
+    // {
+    //     if(p_proto->getProtoType() == communication::Proto::ProtoType::DEVLINK2)
+    //     {
+    //         static uint8_t msg_seq;
+
+    //         awlink_host_heartbeat_t msg{0};
+    //         // {
+    //         //     .timestamp = QDateTime::currentMSecsSinceEpoch(),
+    //         //     .connection_num = m_link_block_map.count(),
+    //         //     .seq = msg_seq++,
+    //         //     .type = RC,
+    //         //     .id = 0,
+    //         //     .task_queue_num,
+    //         //     .state = ,
+    //         //     .sw_ver = 1,
+    //         //     .proto_ver = p_proto->getProtoVersion(),
+    //         // };
+
+    //         p_proto->sigPack(AWLINK_MSG_ID_HOST_HEARTBEAT, QByteArray(reinterpret_cast<char*>(&msg), sizeof(msg)));
+    //     }
+    //     // TODO(huangchsh): 更新连接及选项卡状态
+    //     // emit sigUpdateLinkStatus(status);
+    // });
+    // bool result = p_link_task_queue->addFastTask(task);
+    // if(!result)
+    // {
+    //     qDebug() << "Append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
+    // }
+    // else
+    // {
+    //     qDebug() << "Failed append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
+    // }
+
+    emit sigAddLink();
+
+    qDebug("%s connected", p_create_link->getPortName().toStdString().data(), link_block.tasks_q_list.count());
 }
 
 /**
@@ -270,12 +269,15 @@ void LinkManager::slotLinkDisconnected()
     }
 
     auto& link_proto = getSharedPtrProtoByLinkName(link->getPortName());
-    if(link_proto)
+    if(!link_proto)
     {
-        disconnect(link, &communication::Link::sigBytesReceived, link_proto.get(), &communication::Proto::slotParseProto);
+        return;
     }
+
     disconnect(link, &communication::Link::sigCommError, this, &LinkManager::slotLinkCommError);
     disconnect(link, &communication::Link::sigDisconnected, this, &LinkManager::slotLinkDisconnected);
+    disconnect(link, &communication::Link::sigBytesReceived, link_proto.get(), &communication::Proto::slotParseProto);
+    disconnect(link_proto.get(), &communication::Proto::sigPacked, link, &communication::Link::slotWriteBytes);
 
     searchLinkToDo([&link, this](communication::SharedPtrLink link_shptr)
     {

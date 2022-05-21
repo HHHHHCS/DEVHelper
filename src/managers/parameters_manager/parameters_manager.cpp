@@ -8,6 +8,7 @@ using namespace managers;
 
 ParametersManager::ParametersManager(QApplication *app, ManagerCollection* man_collect)
     : Manager(app, man_collect)
+    , m_dev_params_map()
 {
     connect(this, &ParametersManager::sigRequestParametersMap, this, &ParametersManager::slotsCreateParametersMap);
 }
@@ -24,25 +25,49 @@ ParametersManager::~ParametersManager()
  */
 void ParametersManager::slotsCreateParametersMap(const QString link_name)
 {
-    tasks::SharedPtrTasksQueue task_queue = man_collect()->link_man()->getFreeSharedPtrTasksQueueByLink(link_name);
+    auto& task_queue(man_collect()->link_man()->getFreeSharedPtrTasksQueueByLink(link_name));
     if(!task_queue)
     {
-        qDebug() << "Failed to request" << link_name.toStdString().data() << "parameters map" << endl;
+        qDebug() << "Failed to request " << link_name.toStdString().data() << " parameters map" << endl;
         return;
     }
 
     tasks::Task task("get_param_list", task_queue->getName(), 0, [&, this]()
     {
-        // TODO(huangchsh): 1. 发送获取请求
-        // TODO(huangchsh): 2. 等待反馈
-        bool result = false;
-        // result =
-        // 4. 发出参数列表信号
-        if(result)
+        auto& p_proto(man_collect()->link_man()->getSharedPtrProtoByLinkName(link_name));
+        if(!p_proto)
         {
-            emit sigFetchParametersMap(link_name, m_dev_params_map[link_name]);
+            qDebug() << "Failed to get pointer of link " << link_name.toStdString().data() << " proto " << p_proto->getProtoName() << endl;
+            throw 1;
         }
-        printf("%s\r\n", "get_param_list");
+
+        // 1. 发送获取请求
+        if(p_proto->getProtoType() == communication::Proto::ProtoType::DEVLINK2)
+        {
+            awlink_query_or_modify_dev_params_t msg{0};
+            // TODO(huangchsh): 填充消息内容
+            p_proto->sigPack(AWLINK_MSG_ID_QUERY_OR_MODIFY_DEV_PARAMS, QByteArray(reinterpret_cast<char*>(&msg), sizeof(msg)));
+        }
+        else
+        {
+            throw 2;
+        }
+        // 2. 等待反馈
+        // TODO(huangchsh): 设置超时时间
+        if(p_proto->getProtoType() == communication::Proto::ProtoType::DEVLINK2)
+        {
+            auto result(false);
+            // 4. 发出参数列表信号
+            if(result)
+            {
+                emit sigFetchParametersMap(link_name, m_dev_params_map[link_name]);
+            }
+            printf("%s\r\n", "get_param_list");
+        }
+        else
+        {
+            throw 3;
+        }
     });
 
     bool result = task_queue->addTask(task);

@@ -7,7 +7,7 @@ using namespace communication;
 using namespace devconn;
 
 Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
-    : Proto(ProtoType::DEVLINK2, ("dlink2-" + name))
+    : Proto(ProtoType::DEVLINK2, ("dlink2-" + name), (253 == AWLINK_STX ? 2 : 1))
     , m_proto_ptr(std::make_unique<devconn::Devlink2>(getProtoName().toStdString(), chan))
     , m_parse_mutex()
     , m_pack_mutex()
@@ -22,11 +22,8 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
                 {
                     return;
                 }
-                // TODO(huangchsh): 消息转发
-                awlink_dev_heartbeat_t hb{0};
-                memcpy(&hb, msg, sizeof(awlink_dev_heartbeat_t));
 
-                // emit sigParsed();
+                emit sigParsed(QByteArray(msg, sizeof(awlink_message_t)));
             }))
             {
                 return;
@@ -38,11 +35,8 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
                 {
                     return;
                 }
-                // TODO(huangchsh): 消息转发
-                awlink_query_or_modify_dev_params_ack_t ack{0};
-                memcpy(&ack, msg, sizeof(awlink_query_or_modify_dev_params_ack_t));
 
-                // emit sigParsed();
+                emit sigParsed(QByteArray(msg, sizeof(awlink_message_t)));
             }))
             {
                 return;
@@ -54,11 +48,8 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
                 {
                     return;
                 }
-                // TODO(huangchsh): 消息转发
-                awlink_restore_factory_ack_t ack{0};
-                memcpy(&ack, msg, sizeof(awlink_restore_factory_ack_t));
 
-                // emit sigParsed();
+                emit sigParsed(QByteArray(msg, sizeof(awlink_message_t)));
             }))
             {
                 return;
@@ -70,17 +61,21 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
                 {
                     return;
                 }
-                // TODO(huangchsh): 消息转发
-                awlink_update_firmware_ack_t ack{0};
-                memcpy(&ack, msg, sizeof(awlink_update_firmware_ack_t));
 
-                // emit sigParsed();
+                emit sigParsed(QByteArray(msg, sizeof(awlink_message_t)));
             }))
             {
                 return;
             }
         }
     }
+
+    connect(this, &Devlink2Proto::sigPack, this, &Devlink2Proto::slotPackProto, Qt::DirectConnection);
+}
+
+Devlink2Proto::~Devlink2Proto()
+{
+    disconnect(this, &Devlink2Proto::sigPack, this, &Devlink2Proto::slotPackProto);
 }
 
 /**

@@ -96,7 +96,7 @@ qint64 SerialPort::writePort(const QByteArray &buffer)
 
     QMutexLocker locker(&m_write_mutex);
     auto send_counts = this->write(buffer);
-    while(!this->waitForBytesWritten(1000));
+    while(!this->waitForBytesWritten());
     // qDebug() << "Send bytes:" << buffer;
 
     return send_counts;

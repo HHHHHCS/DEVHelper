@@ -81,15 +81,16 @@ namespace communication
         public:
             virtual ~Proto() = default;
 
-            QString getProtoName() const noexcept { return m_proto_name; };
-
+            QString getProtoName() const noexcept { return m_proto_name; }
             ProtoType getProtoType() const noexcept { return m_proto_type; }
+            uint8_t getProtoVersion() const noexcept { return m_proto_version; }
 
         protected:
-            explicit Proto(const ProtoType& proto_type, const QString& proto_name)
+            explicit Proto(const ProtoType& proto_type, const QString& proto_name, const uint8_t proto_version)
                 : QThread(nullptr)
                 , m_proto_type(proto_type)
                 , m_proto_name(proto_name)
+                , m_proto_version(proto_version)
             {
                 QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
                 qRegisterMetaType<Proto*>("communication::Proto");
@@ -102,6 +103,7 @@ namespace communication
         private:
             const ProtoType m_proto_type;
             const QString m_proto_name;
+            const uint8_t m_proto_version;
     };
     using UniquePtrProto = std::unique_ptr<Proto>;
     using SharedPtrProto = std::shared_ptr<Proto>;

@@ -15,12 +15,6 @@ namespace communication
     {
         Q_OBJECT
 
-        signals:
-            /**
-             * @brief 触发恢复出厂成功信号
-             */
-            void sigRestoreFactorySucceed();
-
         private slots:
             /**
              * @brief 协议解析槽
@@ -43,7 +37,7 @@ namespace communication
             Devlink2Proto(const Devlink2Proto&&) = delete;
             Devlink2Proto& operator=(const Devlink2Proto&) = delete;
             Devlink2Proto& operator=(const Devlink2Proto&&) = delete;
-            ~Devlink2Proto() override = default;
+            ~Devlink2Proto() override;
 
         private:
             using UniquePtrDevlink2 = std::unique_ptr<devconn::Devlink2>;
