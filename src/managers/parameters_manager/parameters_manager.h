@@ -1,11 +1,13 @@
 ﻿#pragma once
 
+#include <atomic>
 #include <functional>
 
-#include <QObject>
-#include <QVariant>
-#include <QString>
 #include <QMap>
+#include <QMutexLocker>
+#include <QObject>
+#include <QString>
+#include <QVariant>
 
 #include "manager_collection.h"
 
@@ -47,11 +49,27 @@ namespace managers
              */
             void slotsCreateParametersMap(const QString link_name);
 
+            /**
+             * @brief 设备参数操作响应槽
+             * @note 操作包括
+             *              1. 查询
+             *              2. 修改
+             *              3. 获取列表
+             * @note 对应信号 sigParsed
+             */
+            void slotsRespParametersOperation(const QByteArray& bytes);
+
         public:
+            struct ParametersMapBlock
+            {
+                uint32_t num; // 参数数量
+                QVariantMap map;
+            };
+
             using ParametersMap = QVariantMap;
             using ParametersMapIterator = ParametersMap::Iterator;
             using ParametersMapConstIterator = ParametersMap::ConstIterator;
-            using LinkParametersMap = QMap<QString, ParametersMap>;
+            using LinkParametersMap = QMap<QString, ParametersMapBlock>;
             using LinkParametersMapIterator = LinkParametersMap::Iterator;
             using LinkParametersMapConstIterator = LinkParametersMap::ConstIterator;
 
@@ -100,8 +118,21 @@ namespace managers
             ~ParametersManager() final;
 
         private:
-            // TODO(huangchsh): 同一连接名存在连接多个设备的情况，需要考虑优化
+            enum ParametersOperation : uint8_t
+            {
+                PARAMETERS_OPERATION_QUERY = 1,
+                PARAMETERS_OPERATION_MODIFY,
+                PARAMETERS_OPERATION_FETCH_LIST,
+            };
+
+        private:
             LinkParametersMap m_dev_params_map;   // 与连接名相对应的参数列表
+
+            std::atomic_uint8_t m_dev_param_fetch_list_msg_seq;
+            std::atomic_bool m_is_ever_fetched_params_list; // 完成过参数列表获取标志
+            std::atomic_bool m_is_waitting_for_params_list;
+
+            QMutex m_mutex_params_list_operation;
 
             void upload(const QString dev_name);
 
@@ -109,5 +140,7 @@ namespace managers
 
             void fetch(const QString dev_name);
             // TODO(huangchsh): 实现参数列表解析
+
+            // TODO(huangchsh): 支持XML、JSON的输入
     };
 }   // namespace managers

@@ -29,45 +29,37 @@ namespace communication
 
             /**
              * @brief 协议封装信号
-             * @param[in] 消息号
-             * @param[in] 需要封装的数据
              */
-            void sigPack(uint32_t, const QByteArray&);
+            void sigPack(const QByteArray&);
 
             /**
              * @brief 协议解析信号
-             * @param[in] 需要解析的数据
              */
             void sigParse(const QByteArray&);
 
             /**
              * @brief 协议解析完成信号
-             * @param[in] 解析完成的数据
              */
             void sigParsed(const QByteArray&);
 
             /**
              * @brief 协议封装完成信号
              * @note 对应槽 communication::Link::slotWriteBytes
-             * @param[in] 封装完成的数据
              */
-            void sigPacked(QByteArray&);
+            void sigPacked(const QByteArray&);
 
         private slots:
             /**
              * @brief 协议解析槽
              * @note 在槽内完成协议解析并进行其他处理
-             * @param[in] data 待解析数据
              */
             virtual void slotParseProto(const QByteArray& data) = 0;
 
             /**
              * @brief 协议封装槽
              * @note 在槽内完成协议封装并进行其他处理，最后转发至通信端口
-             * @param[in] msg_id 消息ID
-             * @param[in] msg   消息数据
              */
-            virtual void slotPackProto(uint32_t msg_id, const QByteArray& msg) = 0;
+            virtual void slotPackProto(const QByteArray& msg) = 0;
 
         public:
             enum class ProtoType : int8_t

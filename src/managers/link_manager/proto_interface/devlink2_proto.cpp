@@ -23,20 +23,26 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
                     return;
                 }
 
-                emit sigParsed(QByteArray(msg, sizeof(awlink_message_t)));
+                uint32_t msg_id(AWLINK_MSG_ID_DEV_HEARTBEAT);
+                auto bytes(QByteArray(reinterpret_cast<char*>(&msg_id), sizeof(msg_id)));
+                bytes.append(msg, sizeof(awlink_dev_heartbeat_t));
+                emit sigParsed(bytes);
             }))
             {
                 return;
             }
 
-            if(m_proto_ptr->registerMsgHandle(AWLINK_MSG_ID_QUERY_OR_MODIFY_DEV_PARAMS_ACK, [this](const char* msg)
+            if(m_proto_ptr->registerMsgHandle(AWLINK_MSG_ID_DEV_PARAM_HOST_QUERY_OR_MODIFY_ACK, [this](const char* msg)
             {
                 if(!msg)
                 {
                     return;
                 }
 
-                emit sigParsed(QByteArray(msg, sizeof(awlink_message_t)));
+                uint32_t msg_id(AWLINK_MSG_ID_DEV_PARAM_HOST_QUERY_OR_MODIFY_ACK);
+                auto bytes(QByteArray(reinterpret_cast<char*>(&msg_id), sizeof(msg_id)));
+                bytes.append(msg, sizeof(awlink_dev_param_host_query_or_modify_ack_t));
+                emit sigParsed(bytes);
             }))
             {
                 return;
@@ -49,7 +55,10 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
                     return;
                 }
 
-                emit sigParsed(QByteArray(msg, sizeof(awlink_message_t)));
+                uint32_t msg_id(AWLINK_MSG_ID_RESTORE_FACTORY_ACK);
+                auto bytes(QByteArray(reinterpret_cast<char*>(&msg_id), sizeof(msg_id)));
+                bytes.append(msg, sizeof(awlink_restore_factory_ack_t));
+                emit sigParsed(bytes);
             }))
             {
                 return;
@@ -62,7 +71,10 @@ Devlink2Proto::Devlink2Proto(const QString& name, const awlink_channel_t chan)
                     return;
                 }
 
-                emit sigParsed(QByteArray(msg, sizeof(awlink_message_t)));
+                uint32_t msg_id(AWLINK_MSG_ID_UPDATE_FIRMWARE_ACK);
+                auto bytes(QByteArray(reinterpret_cast<char*>(&msg_id), sizeof(msg_id)));
+                bytes.append(msg, sizeof(awlink_update_firmware_ack_t));
+                emit sigParsed(bytes);
             }))
             {
                 return;
@@ -105,10 +117,9 @@ void Devlink2Proto::slotParseProto(const QByteArray& buffer)
 /**
  * @brief 协议封装槽
  * @note 在槽内完成协议封装并进行其他处理，最后转发至通信端口
- * @param[in] msg_id 消息ID
- * @param[in] msg   消息数据
+ * @param[in] msg   消息数据。前4字节为msg_id
  */
-void Devlink2Proto::slotPackProto(uint32_t msg_id, const QByteArray& msg)
+void Devlink2Proto::slotPackProto(const QByteArray& msg)
 {
     if(msg.isEmpty())
     {
@@ -122,6 +133,8 @@ void Devlink2Proto::slotPackProto(uint32_t msg_id, const QByteArray& msg)
 
     QMutexLocker locker(&m_pack_mutex);
     awlink_message_t tmp{0};
+    uint32_t msg_id(0);
+    memcpy(&msg_id, msg.data(), sizeof(uint32_t));
     if(Devlink2::DEV_SUCCESS == m_proto_ptr->encodeMsg(msg_id, msg.data(), tmp))
     {
         emit sigPacked(QByteArray(reinterpret_cast<char*>(&tmp), sizeof(tmp)));

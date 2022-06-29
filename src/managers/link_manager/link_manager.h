@@ -1,11 +1,12 @@
 ﻿#pragma once
 
+#include <atomic>
 #include <functional>
 #include <thread>
-#include <atomic>
 
 #include <QObject>
 #include <QMap>
+#include <QMutexLocker>
 #include <QString>
 
 #include "tasks_queue.hpp"
@@ -75,15 +76,6 @@ namespace managers
              */
             Q_INVOKABLE void removeChoiceLink(const QString name);
 
-            enum class LinkStatusType : uint8_t
-            {
-                CONNECTED,
-                DISCONNECTED,
-                LOST,
-                RECONNECTED,
-            };
-            Q_ENUM(LinkStatusType);
-
             Q_ENUM(communication::Link::LinkType);
 
         public:
@@ -130,14 +122,17 @@ namespace managers
             using LinkBlockMap = QMap<communication::SharedPtrLink, LinkBlock>;
 
         private:
-            static constexpr char *LINK_DEV_NAME_LIST[] = {"rc", "rn", "rp", "ba", "uav"};   // 可选设备列表
+            // TODO(huangchsh): 此列表存储位置需要更换
+            static constexpr char *LINK_DEV_NAME_LIST[] = {"antworkrc", "antworkrn", "antworkrp", "antworkba"};   // 可选设备列表
 
-            std::unique_ptr<std::thread> m_p_serial_scan_thread_ptr;
+            std::unique_ptr<std::thread> m_p_serial_scan_thread;
             std::atomic_bool m_serial_scan_thread_stop_flag;
 
             QVariantMap m_link_info_map;   // 可连接端口名列表
 
             LinkBlockMap m_link_block_map;   // 选择的连接端口指针对象及其携带的任务队列
+
+            QMutex m_mutex_create_link;
 
             communication::SharedPtrLink searchLinkToDo(std::function<communication::SharedPtrLink(const communication::SharedPtrLink&)> func);
     };

@@ -49,6 +49,7 @@ Item
 
             for(var elem in link_info_list)
             {
+                // TODO(huangchsh): 从description中分离出设备ID
                 link_listview_model.append({"name" : elem, "description" : link_info_list[elem]})
             }
         }
@@ -167,7 +168,7 @@ Item
                     onDoubleClicked:
                     {
                         link_listview.currentIndex = index
-                        link_manager_obj.createChoiceLink(name)
+                        link_manager_obj.createChoiceLink(name + "-" + description)
                     }
                 }
             }
@@ -180,11 +181,10 @@ Item
         var component = Qt.createComponent("DevHelperInterface.qml")
         if(component.status == Component.Ready)
         {
-            component.link_name = link_name
-            component.link_description = link_description
+            component.link_name = link_name + "-" + link_description
 
             // 发出获取参数列表信号
-            param_manager_obj.sigRequestParametersMap(link_name)
+            param_manager_obj.sigRequestParametersMap(component.link_name)
 
             // 增加连接选项卡
             var tab_name = link_name + ":" + link_description

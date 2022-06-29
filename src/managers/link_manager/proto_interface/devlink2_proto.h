@@ -26,10 +26,9 @@ namespace communication
             /**
              * @brief 协议封装槽
              * @note 在槽内完成协议封装并进行其他处理，最后转发至通信端口
-             * @param[in] msg_id 消息ID
-             * @param[in] msg   消息数据
+             * @param[in] msg   消息数据。前4字节为消息ID
              */
-            void slotPackProto(uint32_t msg_id, const QByteArray& data) override;
+            void slotPackProto(const QByteArray& data) override;
 
         public:
             explicit Devlink2Proto(const QString& name, const awlink_channel_t chan);

@@ -13,7 +13,7 @@ using namespace managers;
 
 LinkManager::LinkManager(QApplication *app, ManagerCollection* man_collect)
     : Manager(app, man_collect)
-    , m_p_serial_scan_thread_ptr(nullptr)
+    , m_p_serial_scan_thread(nullptr)
     , m_serial_scan_thread_stop_flag(false)
     , m_link_info_map{}
     , m_link_block_map{}
@@ -24,13 +24,13 @@ LinkManager::~LinkManager()
 {
     m_serial_scan_thread_stop_flag = true;
     // 回收检测端口线程资源
-    if(m_p_serial_scan_thread_ptr)
+    if(m_p_serial_scan_thread)
     {
-        if(m_p_serial_scan_thread_ptr->joinable())
+        if(m_p_serial_scan_thread->joinable())
         {
-            m_p_serial_scan_thread_ptr->join();
+            m_p_serial_scan_thread->join();
         }
-        while(m_p_serial_scan_thread_ptr->joinable());
+        while(m_p_serial_scan_thread->joinable());
     }
 
     m_link_block_map.clear();
@@ -43,12 +43,16 @@ LinkManager::~LinkManager()
 void LinkManager::createScanLinksListWork()
 {
     // 1. 创建可连接USB或串口端口的搜索线程
-    m_p_serial_scan_thread_ptr = std::make_unique<std::thread>([this]()
+    m_p_serial_scan_thread = std::make_unique<std::thread>([this]()
     {
         QList<port_lib::PortInfoStru> links_list;
         while(!m_serial_scan_thread_stop_flag)
         {
-            links_list.clear();
+            if(!links_list.isEmpty())
+            {
+                links_list.clear();
+            }
+
             links_list = communication::SerialLink::findPortsListForward();
             if(!links_list.isEmpty())
             {
@@ -62,14 +66,12 @@ void LinkManager::createScanLinksListWork()
                             m_link_info_map.insert(iter.name, iter.serial_number);
                         }
                     }
-
-                    // NOTE(huangchsh): 调试代码
-                    // m_link_info_map.insert(iter.name, iter.description);
                 }
 
                 // TODO(huangchsh): 需要对设备通过类型进行区分及显示
                 if(!m_link_info_map.isEmpty())
                 {
+                    QMutexLocker lock(&m_mutex_create_link);
                     emit sigFetchLinkInfoMap(m_link_info_map);
                     m_link_info_map.clear();
                 }
@@ -92,13 +94,15 @@ void LinkManager::createScanLinksListWork()
  */
 void LinkManager::createChoiceLink(const QString name)
 {
+    QMutexLocker lock(&m_mutex_create_link);
+
     if(name.isEmpty())
     {
         return;
     }
 
     // 同名连接检测
-    if(getSharedPtrLinkByName(name) != nullptr)
+    if(!getSharedPtrLinkByName(name))
     {
         return;
     }
@@ -129,7 +133,7 @@ void LinkManager::createChoiceLink(const QString name)
     LinkBlock link_block;
 
     // TODO(huangchsh): 此逻辑可扩展，不应将协议应用局限于连接类型
-    const auto& link_type = p_create_link->getLinkType();
+    const auto& link_type(p_create_link->getLinkType());
     switch (link_type)
     {
         case communication::Link::LinkType::SERIAL:
@@ -162,7 +166,7 @@ void LinkManager::createChoiceLink(const QString name)
     }
 
     // TODO(huangchsh): 通过index支持多条队列
-    auto& p_link_task_queue = std::make_shared<tasks::TasksQueue>(name.toStdString() + "_q_" + std::to_string(m_link_block_map[p_create_link].tasks_q_list.size()));
+    auto& p_link_task_queue(std::make_shared<tasks::TasksQueue>(name.toStdString() + "_q_" + std::to_string(m_link_block_map[p_create_link].tasks_q_list.size())));
     link_block.tasks_q_list.append(p_link_task_queue);
 
     connect(p_create_link.get(), &communication::Link::sigCommError, this, &LinkManager::slotLinkCommError);
@@ -172,40 +176,36 @@ void LinkManager::createChoiceLink(const QString name)
 
     m_link_block_map.insert(p_create_link, link_block);
 
-    // // 添加默认任务：发送心跳
-    // tasks::Task task("heartbeat", p_link_task_queue->getName(), 1, [p_proto = link_block.p_proto, this]()
-    // {
-    //     if(p_proto->getProtoType() == communication::Proto::ProtoType::DEVLINK2)
-    //     {
-    //         static uint8_t msg_seq;
+    // 添加默认任务：发送心跳，目标为通信总线上的任意设备
+    tasks::Task task("heartbeat", p_link_task_queue->getName(), 1, [p_proto = link_block.p_proto, this]()
+    {
+        if(p_proto->getProtoType() == communication::Proto::ProtoType::DEVLINK2)
+        {
+            static uint8_t msg_seq;
+            awlink_host_heartbeat_t msg{0};
 
-    //         awlink_host_heartbeat_t msg{0};
-    //         // {
-    //         //     .timestamp = QDateTime::currentMSecsSinceEpoch(),
-    //         //     .connection_num = m_link_block_map.count(),
-    //         //     .seq = msg_seq++,
-    //         //     .type = RC,
-    //         //     .id = 0,
-    //         //     .task_queue_num,
-    //         //     .state = ,
-    //         //     .sw_ver = 1,
-    //         //     .proto_ver = p_proto->getProtoVersion(),
-    //         // };
+            msg.timestamp = static_cast<uint64_t>(QDateTime::currentMSecsSinceEpoch());
+            msg.connection_num = static_cast<uint8_t>(m_link_block_map.count());
+            msg.seq = ++msg_seq;
+            msg.sw_ver = 1;
+            msg.proto_ver = p_proto->getProtoVersion();
 
-    //         p_proto->sigPack(AWLINK_MSG_ID_HOST_HEARTBEAT, QByteArray(reinterpret_cast<char*>(&msg), sizeof(msg)));
-    //     }
-    //     // TODO(huangchsh): 更新连接及选项卡状态
-    //     // emit sigUpdateLinkStatus(status);
-    // });
-    // bool result = p_link_task_queue->addFastTask(task);
-    // if(!result)
-    // {
-    //     qDebug() << "Append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
-    // }
-    // else
-    // {
-    //     qDebug() << "Failed append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
-    // }
+            uint32_t msg_id(AWLINK_MSG_ID_HOST_HEARTBEAT);
+            auto bytes(QByteArray(reinterpret_cast<char*>(&msg_id), sizeof(msg_id)));
+            bytes.append(reinterpret_cast<char*>(&msg), sizeof(awlink_host_heartbeat_t));
+            p_proto->sigPack(bytes);
+        }
+        // TODO(huangchsh): 更新连接及选项卡状态
+        // emit sigUpdateLinkStatus(status);
+    });
+    if(!p_link_task_queue->addFastTask(task))
+    {
+        qDebug() << "Append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
+    }
+    else
+    {
+        qDebug() << "Failed append task" << task.getName().data() << "into queue" << p_link_task_queue->getName().data() << endl;
+    }
 
     emit sigAddLink();
 
@@ -219,7 +219,7 @@ void LinkManager::createChoiceLink(const QString name)
  */
 void LinkManager::removeChoiceLink(const QString name)
 {
-    auto& p_link = getSharedPtrLinkByName(name);
+    const auto& p_link(getSharedPtrLinkByName(name));
     if(p_link)
     {
         p_link->disconnect();
@@ -262,13 +262,15 @@ void LinkManager::slotLinkCommError(const QString& link_name, const QString& lin
  */
 void LinkManager::slotLinkDisconnected()
 {
-    const auto& link = qobject_cast<communication::Link*>(sender());
+    QMutexLocker lock(&m_mutex_create_link);
+
+    const auto& link(qobject_cast<communication::Link*>(sender()));
     if(!link)
     {
         return;
     }
 
-    auto& link_proto = getSharedPtrProtoByLinkName(link->getPortName());
+    const auto& link_proto(getSharedPtrProtoByLinkName(link->getPortName()));
     if(!link_proto)
     {
         return;
@@ -309,6 +311,7 @@ communication::SharedPtrLink LinkManager::getSharedPtrLinkByName(const QString& 
 
 communication::SharedPtrProto LinkManager::getSharedPtrProtoByLinkName(const QString& name)
 {
+    QMutexLocker lock(&m_mutex_create_link);
     const auto& link = getSharedPtrLinkByName(name);
     if(m_link_block_map.contains(link))
     {
@@ -323,7 +326,8 @@ communication::SharedPtrProto LinkManager::getSharedPtrProtoByLinkName(const QSt
 
 tasks::SharedPtrTasksQueue LinkManager::getFreeSharedPtrTasksQueueByLink(const QString& name)
 {
-    auto& p_link = getSharedPtrLinkByName(name);
+    QMutexLocker lock(&m_mutex_create_link);
+    const auto& p_link(getSharedPtrLinkByName(name));
     if(!p_link)
     {
         return tasks::SharedPtrTasksQueue(nullptr);
@@ -345,9 +349,8 @@ communication::SharedPtrLink LinkManager::searchLinkToDo(std::function<communica
 {
     communication::SharedPtrLink link_ptr = nullptr;
 
-    auto& list = m_link_block_map;
-
-    auto& iter = list.cbegin();
+    const auto& list(m_link_block_map);
+    auto& iter(list.cbegin());
     while(iter != list.cend())
     {
         link_ptr = func(iter.key());

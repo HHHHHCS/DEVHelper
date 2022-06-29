@@ -75,7 +75,10 @@ void UpgradeManager::factory(const QString link_name)
                 // .id = 0,
             };
 
-            p_proto->sigPack(AWLINK_MSG_ID_HOST_HEARTBEAT, QByteArray(reinterpret_cast<char*>(&msg), sizeof(awlink_host_heartbeat_t)));
+            uint32_t msg_id(AWLINK_MSG_ID_RESTORE_FACTORY);
+            auto bytes(QByteArray(reinterpret_cast<char*>(&msg_id), sizeof(msg_id)));
+            bytes.append(reinterpret_cast<char*>(&msg), sizeof(awlink_restore_factory_t));
+            p_proto->sigPack(bytes);
         }
     });
 
